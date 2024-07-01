@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+
+<body>
+
+<th:block th:insert="insert/header.html"></th:block>
+<div id="app">
+    <article class="box centerBox" id="chatBox">
+        <div class="container">
+            <div>
+                <h2>{{ room.name }}</h2>
+            </div>
+            <div class="chat-container">
+                <ul class="list-group">
+                    <!-- 채팅 내용 -->
+                    <li :class="{
+                        'message-user': message.isOwn && message.type === 'TALK',
+                        'message-other': !message.isOwn && message.type === 'TALK',
+                        'message-notification': message.type === 'ENTER' || message.type === 'LEAVE'
+                    }"
+                        class="list-group-item"
+                        v-for="message in messages">
+                        <template v-if="message.isOwn || message.type !== 'TALK'">{{ message.message }}</template>
+                        <template v-else>{{ message.sender }} - {{ message.message }}</template>
+                    </li>
+                </ul>
+            </div>
+            <div class="input-group">
+                <!-- 메시지 입력란 -->
+                <div class="buttonContain" id="chatInputGroup">
+                    <input class="form-control" type="text" v-model="message" v-on:keypress.enter="sendMessage">
+                    <div class="input-group-append">
+                        <button @click="sendMessage" class="chatBtn" type="button">보내기</button>
+                    </div>
+                    <button class="chatBtn mainBte" id="chatBack" v-on:click="chatBack()">나가기</button>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <div id="chat-room-detail-user-list-box">
+        <h2 class="major">참여자</h2>
+        <span class="chat-room-detail-user" v-for="user in chatRoomUserList">
+            <p>[ {{user.name}} ] 님
+                <span v-if="user.mseq == room.owner" style="color:blueviolet; font-weight:bolder;">[방장]</span>
+                <button v-if="user.mseq != room.owner" v-on:click="banUser(room.roomId, user.mseq)">강퇴</button>
+            </p>
+        </span>
+    </div>
+</div>
+<button class="chatBtn mainBtn" id="chatExit">채팅방 탈퇴</button>
+<th:block th:insert="insert/footer.html"></th:block>
+
+<!-- JavaScript -->
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script src="/webjars/sockjs-client/1.1.2/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
+
+<script>
+
+    // WebSocket & Stomp 초기화
+    let sock = new SockJS("/ws-stomp");
+    let ws = Stomp.over(sock);
+    let reconnect = 0;
+
+    // Vue.js
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            roomId: '',
+            room: {},
+            sender: '',
+            message: '',
+            messages: [],
+            mseq: '',
+            chatRoomUserList: [],
+            user: ''
+        },
+        created() {
+            this.roomId = localStorage.getItem('wschat.roomId');
+            this.sender = localStorage.getItem('wschat.sender');
+            this.mseq = localStorage.getItem('wschat.mseq');
+            this.findUserList();
+            this.findRoom();
+            this.loadMessages();
+
+
+        },
+        mounted() {
+            this.scrollToBottom();
+        },
+        methods: {
+            findRoom() {
+                axios.get('/chat/room/' + this.roomId).then(response => {
+                    this.room = response.data;
+                    console.log("채팅룸 정보" + this.room);
+
+                    })
+                    .catch(error => {
+                        console.error('채팅룸 정보를 가져오는 중 오류 발생:', error);
+                    });
+            },
+
+            loadMessages() {
+                axios.get('/chat/room/' + this.roomId + '/messages').then(response => {
+                    this.messages = response.data.map(msg => {
+                        msg.isOwn = msg.mseq == this.mseq;
+                        if (msg.type === 'ENTER' || msg.type === 'LEAVE') {
+                            msg.sender = '[알림]';
+                        }
+                        return msg;
+                    });
+                    this.$nextTick(() => {
+                        this.scrollToBottom();
+                    });
+                });
+            },
+            sendMessage() {
+                if (this.message.trim() !== '') {
+                    const message = {
+                        type: 'TALK',
+                        roomId: this.roomId,
+                        sender: this.sender,
+                        message: this.message,
+                        mseq: this.mseq
+                    };
+                    ws.send("/pub/chat/message", {}, JSON.stringify(message));
+                    this.message = '';
+                }
+            },
+            recvMessage(recv) {
+                recv.isOwn = recv.mseq == this.mseq;
+                if (recv.type === 'ENTER' || recv.type === 'LEAVE') {
+                    recv.sender = '[알림]';
+                }
+                this.messages.push(recv);
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                });
+            },
+            scrollToBottom() {
+                const container = this.$el.querySelector('.chat-container');
+                container.scrollTop = container.scrollHeight;
+            },
+            findUserList() {
+                axios.get('/chat/userList/' + this.roomId).then(response => {
+                    this.chatRoomUserList = response.data;
+                    this.findRoom();
+                }).catch(error => {
+                    console.error('참여자 리스트 조회 오류:', error);
+                });
+            },
+            chatBack(){
+              location.href= "/chat/room";
+            },
+            banUser: function (roomId, mseq) {
+                if (confirm('회원을 강퇴하시겠습니까?')) {
+                    let params = new URLSearchParams();
+                    params.append('roomId', roomId);
+                    params.append('mseq', mseq);
+                    axios.get('/chat/roomBanUser', { params: params })
+                        .then(response => {
+                            alert('사용자 퇴장 조치 성공:');
+                            this.findRoom();
+                        })
+                        .catch(error => {
+                            alert('사용자 퇴장 조치 오류:');
+                        })
+                } else {
+                    alert('취소되었습니다.');
+                }
+            },
+        }
+    });
+
+    function connect() {
+        // Pub/Sub 이벤트
+        ws.connect({}, function (frame) {
+            // 채팅방 구독
+            ws.subscribe("/sub/chat/room/" + vm.$data.roomId, function (message) {
+                let recv = JSON.parse(message.body);
+                vm.recvMessage(recv);
+            });
+
+            ws.send("/pub/chat/message", {}, JSON.stringify({
+                type: 'ENTER',
+                roomId: vm.$data.roomId,
+                sender: vm.$data.sender,
+                mseq: vm.$data.mseq
+            }));
+        }, function (error) {
+            if (reconnect++ <= 5) {
+                setTimeout(function () {
+                    console.log("connection reconnect");
+                    sock = new SockJS("/ws-stomp");
+                    ws = Stomp.over(sock);
+                    connect();
+                }, 10 * 1000);
+            }
+        });
+    }
+
+    connect();
+
+    document.getElementById('chatExit').addEventListener('click', function () {
+        ws.send("/pub/chat/message", {}, JSON.stringify({
+            type: 'LEAVE',
+            roomId: vm.$data.roomId,
+            sender: vm.$data.sender,
+            mseq: vm.$data.mseq
+        }));
+        location.href = "/chat/room";
+    });
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<input type="hidden" id="message" th:value="${message}"/>
+<script>
+    var message = $("#message").val();
+    if(message != null) {
+        alert(message);
+        location.href = "/qna/home"
+    }
+</script>
+</body>
+</html>

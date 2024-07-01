@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<body>
+<th:block th:insert="insert/header.html"></th:block>
+<input id="memberName" name="memberName" th:value="${member.name}" type="hidden"/>
+<input id="memberMseq" name="memberMseq" th:value="${member.mseq}" type="hidden"/>
+<article class="box" id="chatCreateBox">
+    <div class="lengthContain" id="app">
+        <!--채팅방 이름-->
+        <div>
+            <input class="createName" placeholder="방 이름을 입력해주세요" type="text" v-model="room_name">
+        </div>
+
+        <h3>캠핑장</h3>
+        <input id="selectedItem" placeholder="캠핑장 검색을 눌러주세요." readonly type="text" v-model="selectedItemName">
+        <!--상세보기로 들어온 경우 보이지 않음-->
+        <button class="mainBtn" id="openSearch" onclick="openSearch()" type="button">캠핑장 검색</button>
+
+        <!--목적-->
+        <h3>캠핑 목적</h3>
+        <div class="createPurposeDiv">
+            <input id="chatPurpose1" name="chatPurpose" type="checkbox" v-model="purpose" value="같이 놀아요!">
+            <label for="chatPurpose1">
+                <img alt="dance" class="chatPurposeIcon" src="/assets/images/icon/dance.png">
+                같이 놀아요!
+            </label>
+            <input id="chatPurpose2" name="chatPurpose" type="checkbox" v-model="purpose" value="애완동물과 함께해요!">
+            <label for="chatPurpose2">
+                <img alt="dogwith" class="chatPurposeIcon" src="/assets/images/icon/dogwith.png">
+                애완동물과 함께해요!
+            </label>
+            <input id="chatPurpose3" name="chatPurpose" type="checkbox" v-model="purpose" value="만남을 원해요!">
+            <label for="chatPurpose3">
+                <img alt="love" class="chatPurposeIcon" src="/assets/images/icon/love.png">
+                만남을 원해요!
+            </label>
+            <input id="chatPurpose4" name="chatPurpose" type="checkbox" v-model="purpose" value="조용히 쉬어요!">
+            <label for="chatPurpose4">
+                <img alt="campingHuman" class="chatPurposeIcon" src="/assets/images/icon/campingHuman.png">
+                조용히 쉬어요!
+            </label>
+            <input id="chatPurpose5" name="chatPurpose" type="checkbox" v-model="purpose" value="아이와 함께해요!">
+            <label for="chatPurpose5">
+                <img alt="parent" class="chatPurposeIcon" src="/assets/images/icon/parent.png">
+                아이와 함께해요!
+            </label>
+        </div>
+
+        <!--기간-->
+        <h3>캠핑 기간</h3>
+        <div class="createDate">
+            <input id="chatDateStart" name="chatDateStart" type="date" v-model="start_date">
+            <input id="chatDateEnd" name="chatDateEnd" type="date" v-model="end_date">
+        </div>
+
+        <!--인원-->
+        <h3>캠핑 참여 인원수</h3>
+        <div class="createMember">
+            <input id="chatPeople" max="10" min="2" name="chatPeople" type="number" v-model="max_mem">
+        </div>
+
+        <div class="buttonContain">
+
+            <button @click="createRoom" class="mainBtn" type="button">방 생성</button>
+
+        </div>
+    </div>
+</article>
+
+<th:block th:insert="insert/footer.html"></th:block>
+
+<!-- JavaScript -->
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script>
+    let memberName = $('input[name=memberName]').val();
+    let memberMseq = $('input[name=memberMseq]').val();
+</script>
+<script>
+    function openSearch() {
+        var searchWindow = window.open("/chat/chatCampingSearch", "Search", "width=600,height=400");
+    }
+
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            room_name: '',
+            chatrooms: [],
+            start_date: '',
+            end_date: '',
+            max_mem: '',
+            purpose: [],
+            selectedItemName: '',
+            memberName: '',
+            memberMseq: '',
+            camp_name: ''
+        },
+        watch: {
+            max_mem: function (newVal) {
+                // newVal이 비어있는 경우 함수를 종료
+                if (newVal === null || newVal === undefined || newVal === '') {
+                    return;
+                }
+
+                // setTimeout을 사용하여 검사를 지연
+                setTimeout(() => {
+                    if (this.max_mem < 2) {
+                        alert("최소 2명 이상의 인원이 필요합니다.");
+                        this.max_mem = 2;
+                    } else if (this.max_mem > 10) {
+                        alert("최대 10명 이하의 인원이 가능합니다.");
+                        this.max_mem = 10;
+                    }
+                }, 500);  // 500ms 지연
+            }
+        },
+        created() {
+
+            window.addEventListener("message", this.receiveMessage, false);
+            this.memberName = document.getElementById('memberName').value;
+            this.memberMseq = document.getElementById('memberMseq').value;
+        },
+        methods: {
+            findAllRoom: function () {
+                axios.get('/chat/rooms').then(response => {
+                    this.chatrooms = response.data;
+                });
+            },
+            createRoom: function () {
+                if ("" === this.room_name) {
+                    alert("방 제목을 입력해 주십시요.");
+                    return;
+                } else if ("" === this.selectedItemName) {
+                    alert("캠핑장 검색을 눌러주세요.");
+                    return;
+                } else {
+                    var params = new URLSearchParams();
+                    params.append("name", this.room_name);
+                    params.append("startDate", this.start_date);
+                    params.append("endDate", this.end_date);
+                    params.append("maxMem", this.max_mem);
+                    params.append("purpose", this.purpose);
+                    params.append("campName", this.selectedItemName)
+                    params.append("mseq", this.memberMseq)
+                    axios.post('/chat/room', params)
+                        .then(
+                            response => {
+                                alert(response.data.name + "방 개설에 성공하였습니다.");
+
+                                this.enterRoom(response.data.roomId);
+                            }
+                        )
+                        .catch(response => {
+                            alert("채팅방 개설에 실패하였습니다.");
+                        });
+                }
+            },
+            enterRoom: function (roomId) {
+                let mseq = memberMseq;
+                let params = new URLSearchParams();
+                params.append("roomId", roomId);
+                params.append("mseq", mseq)
+                axios.get('/chat/banCheck', {params: params})
+                    .then(
+                        response => {
+                            if (response.data.banned){
+                                alert("퇴장조치당한 방에는 다시 입장할 수 없습니다.")
+                                return;
+                            } else {
+                                let sender = prompt('대화명을 입력해 주세요.\n' + '대화명을 입력하지 않을 시 로그인하신정보( ' + memberName + ' ) 으로 입장합니다.');
+                                if (sender === null) {
+                                    alert('입장이 취소되었습니다.');
+                                    return;
+                                }
+                                if (sender != "") {
+                                    localStorage.setItem('wschat.sender', sender);
+                                    localStorage.setItem('wschat.roomId', roomId);
+                                    localStorage.setItem('wschat.mseq', mseq)
+                                    location.href = "/chat/room/enter/" + roomId;
+                                } else {
+                                    sender = memberName;
+                                    localStorage.setItem('wschat.sender', sender);
+                                    localStorage.setItem('wschat.roomId', roomId);
+                                    localStorage.setItem('wschat.mseq', mseq)
+                                    location.href = "/chat/room/enter/" + roomId;
+                                }
+                            }
+                        }
+                    )
+            },
+            receiveMessage: function (event) {
+                if (event.origin !== window.location.origin) {
+                    return;
+                }
+                if (event.data.selectedItem) {
+                    this.selectedItemName = event.data.selectedItem.name;
+                }
+            }
+        }
+    });
+
+    window.onload = function () {
+        var chatDateStart = document.getElementById('chatDateStart');
+        var chatDateEnd = document.getElementById('chatDateEnd');
+
+        // 시작 날짜가 변경될 때마다 종료 날짜의 min 속성을 업데이트합니다.
+        chatDateStart.addEventListener('change', function () {
+            chatDateEnd.min = chatDateStart.value;
+        });
+    }
+    document.getElementById('openSearch').addEventListener('click', function () {
+        document.getElementById('search').style.display = 'block';
+    });
+    document.getElementById('searchExit').addEventListener('click', function () {
+        document.getElementById('search').style.display = 'none';
+    });
+
+</script>
+</body>
+</html>

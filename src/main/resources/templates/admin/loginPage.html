@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/adminBG.css" rel="stylesheet"/>
+    <title>로그인 페이지</title>
+</head>
+<body>
+<div id="wrapper">
+    <img src="/assets/images/logo/typo.png" id="logoTypo">
+    <div class="content">
+        <form id="loginForm" action="/oauth-login/member/loginProc" method="post">
+            <input id="userId" type="text" name="username" th:placeholder="아이디">
+            <input id="userPw" type="password" name="pw" th:placeholder="비밀번호">
+            <button class="mainBtn" id="loginBtn" type="submit">로그인</button>
+        </form>
+    </div>
+</div>
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var message = /*[[${msg}]]*/ '';
+    if (message != null) {
+        alert(message);
+    }
+    /*]]>*/
+</script>
+<!--배경사진-->
+<div id="bg"></div>
+
+</body>
+</html>

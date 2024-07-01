@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/loginBG.css" rel="stylesheet"/>
+    <title>회원가입</title>
+</head>
+<style>
+    /* 모달 창 스타일 */
+    .modal {
+        display: none; /* 초기에는 숨김 */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+<body>
+
+<a href="/member/login"><img alt="typo" id="typo" th:src="@{/assets/images/logo/typo.png}"></a>
+<script th:inline="javascript">
+    $(document).ready(function () {
+        $('#submitBtn').prop('disabled', true); // 초기에 회원가입 버튼 비활성화
+    });
+
+    function validatePW() {
+        var op = $("#originpw").val();
+        var cp = $("#pwcheck").val();
+        var hp = $("#hiddenPw").val();
+        const pwPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,20}$/;
+        if (pwPattern.test(op)) {
+            if (op === cp) {
+                $("#hiddenPw").val(op);
+                alert("비밀번호가 일치합니다.");
+                $('#submitBtn').prop('disabled', false);
+            } else {
+                alert("비밀번호가 일치하지 않습니다.");
+                $("#pwcheck").val("");
+                $('#submitBtn').prop('disabled', true);
+                $("#originpw").focus();
+            }
+        } else {
+            alert("비밀번호는 8자 이상 20자 미만으로 영어 대·소문자와 특수문자를 1개 이상 포함하여야 합니다.");
+            $("#originpw").focus();
+        }
+
+    }
+
+    function validateId() {
+        var username = $("#userId").val();
+        var hi = $("#hiddenId").val();
+        const usernamePattern = /^[a-z]{1}[a-z0-9]{5,20}$/;
+
+        if (usernamePattern.test(username)) {
+            $.ajax({
+                type: 'POST',
+                url: '/member/validateUser',
+                data: {
+                    username: username
+                },
+                success: function (data) {
+                    $("#hiddenId").val(username);
+                    var result = data.result;
+                    if (result === "success") {
+                        alert("사용 가능한 아이디 입니다.")
+                        $('#submitBtn').prop('disabled', false);
+                    } else {
+                        alert("이미 존재하는 아이디 입니다.")
+                        $('#submitBtn').prop('disabled', true);
+                        $("#userId").focus()
+                    }
+
+                },
+                error: function (error) {
+                    alert("전송 실패")
+                }
+            });
+        } else {
+            alert("아이디는 6글자 이상 20자 미만의 영어 소문자와 숫자로 입력해주세요.");
+            $("#userId").focus();
+        }
+
+    }
+
+    function validateNickname() {
+        var nickname = $("#nickname").val();
+        var hn = $("#hiddenNickname").val();
+        const nicknamePattern = /^.{2,}$/;
+
+        if (nicknamePattern.test(nickname)) {
+            $.ajax({
+                type: 'POST',
+                url: '/member/validateNickname',
+                data: {
+                    nickname: nickname
+                },
+                success: function (data) {
+                    var result = data.result;
+                    if (result === "success") {
+                        $("#hiddenNickname").val(nickname);
+                        alert("사용 가능한 닉네임 입니다.")
+                        $('#submitBtn').prop('disabled', false);
+                    } else {
+                        alert("이미 존재하는 닉네임 입니다.")
+                        $('#submitBtn').prop('disabled', true);
+                        $("#nickname").focus()
+                    }
+
+                },
+                error: function (error) {
+                    alert("전송 실패")
+                }
+            });
+        } else {
+            alert("닉네임은 2글자 이상만 가능합니다.");
+            $("#nickname").focus();
+        }
+
+
+    }
+
+    function validateEmail(email) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailPattern.test(email);
+    }
+
+    function sendNumber() {
+        var email = $("#email").val();
+        if (validateEmail(email)) {
+            $.ajax({
+                url: "/mailSend",
+                type: "POST",
+                dataType: "json",
+                data: {
+                    mail: $("#email").val()
+                },
+                success: function (data) {
+                    $("#hiddenEmail").val(email);
+                    alert(data.result);
+                    if (data.result === "인증번호 전송 성공") {
+                        openModal(); // 모달 창 열기
+                    }
+                },
+                error: function (error) {
+                    alert("인증번호 전송 실패");
+                }
+            });
+        } else {
+            alert("존재하지 않는 이메일 형식입니다.");
+        }
+
+    }
+    var countdown; // 카운트 다운을 관리할 변수
+
+    // 모달 열기
+    function openModal() {
+        var modal = document.getElementById('verificationModal');
+        modal.style.display = 'block';
+
+        startCountdown(); // 카운트 다운 시작
+    }
+
+    // 모달 닫기
+    function closeModal() {
+        var modal = document.getElementById('verificationModal');
+        var modalInput = $("#verificationCodeInput");
+        modalInput.val("");
+        modal.style.display = 'none';
+        clearInterval(countdown); // 카운트 다운 정지
+    }
+
+    function startCountdown() {
+        var timeleft = 180; // 초 단위로 설정할 시간 (3분 = 180초)
+
+        countdown = setInterval(function() {
+            if (timeleft <= 0) {
+                clearInterval(countdown); // 카운트 다운 정지
+                closeModal(); // 시간 초과 후 모달 창 닫기
+                alert("인증시간이 초과되었습니다.")
+            } else {
+                var minutes = Math.floor(timeleft / 60); // 분 계산
+                var seconds = timeleft % 60; // 초 계산
+                document.getElementById("time").textContent = minutes + "분 " + seconds + "초"; // 시간 업데이트
+            }
+            timeleft--;
+        }, 1000); // 1초마다 업데이트
+    }
+
+    // 인증 코드 확인 처리
+    function checkVerificationCode() {
+        var verificationCode = $('#verificationCodeInput').val();
+        $.ajax({
+            url: "/mailCheck",
+            type: "GET",
+            data: {
+                userNumber: verificationCode
+            },
+            success: function (response) {
+                if (response === true) {
+                    alert("인증에 성공하셨습니다.");
+                    $('#submitBtn').prop('disabled', false);
+                    closeModal(); // 인증 성공 후 모달 닫기
+                } else {
+                    alert("인증번호가 일치하지 않습니다.");
+                    $('#submitBtn').prop('disabled', true);
+                }
+            },
+            error: function (error) {
+                alert("인증사실 전송실패");
+            }
+        });
+    }
+
+    function searchAddress() {
+        var postcodePopup = new daum.Postcode({
+            oncomplete: function (data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var roadAddr = data.roadAddress; // 도로명 주소 변수
+                var extraRoadAddr = ''; // 참고 항목 변수
+
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if (data.buildingName !== '' && data.apartment === 'Y') {
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if (extraRoadAddr !== '') {
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById("addr").value = roadAddr;
+                setTimeout(function () {
+                    postcodePopup.close();
+                }, 0);
+            }
+        });
+        postcodePopup.open();
+
+    }
+
+    function submitProc() {
+        var username = $("#userId").val();
+        var password = $("#originpw").val();
+        var name = $("#name").val();
+        var nickname = $("#nickname").val();
+        var birth = $("#birth").val();
+        var phone = $("#phone").val();
+        var phone2 = $("#phone2").val();
+        var email = $("#email").val();
+        var addr = $("#addr").val();
+        const phonePattern = /^(\d{7,8})$/;
+        const usernamePattern = /^[a-z]{1}[a-z0-9]{5,20}$/;
+        const pwPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,20}$/;
+
+        if (username == "") {
+            alert("아이디를 입력해주세요!");
+            $("#userId").focus();
+        } else if ($("#hiddenId").val() != username) {
+            alert("아이디 중복확인을 진행해주세요!");
+            $("#userId").focus();
+        } else if (password == "") {
+            alert("비밀번호를 입력해주세요!");
+            $("#originpw").focus();
+        } else if ($("#hiddenPw").val() != password) {
+            alert("비밀번호 일치 여부를 확인해주세요!");
+            $("#originpw").focus();
+        } else if (name == "") {
+            alert("이름을 입력해주세요!");
+            $("#name").focus();
+        } else if (nickname == "") {
+            alert("사이트에서 사용할 닉네임을 입력해주세요!");
+            $("#nickname").focus();
+        } else if ($("#hiddenNickname").val() != nickname) {
+            alert("닉네임 중복확인을 해주세요!");
+            $("#nickname").focus();
+        } else if (birth == "") {
+            alert("생일을 입력해주세요!");
+        } else if (phone2.length < 7) {
+            alert("유효하지 않은 전화번호입니다!");
+            $("#phone2").focus();
+        } else if (phone == "") {
+            alert("번호를 선택해주세요.");
+            $("#phone").focus();
+        } else if (email == "") {
+            alert("이메일을 입력해주세요!");
+            $("#email").focus();
+        } else if ($("#hiddenEmail").val() !== email) {
+            alert("이메일 인증을 진행해주세요!");
+            $("#email").focus();
+        } else if (addr == "" || addr.length < 10) {
+            alert("주소를 입력해주세요!");
+            $("#addr").focus();
+        } else {
+            $("#joinForm").attr("action", "/member/joinProc").submit();
+        }
+
+    }
+</script>
+
+
+<div class="box centerBox" id="membershipBox">
+    <h1 class="major">회원가입</h1>
+    <div id="membershipContain">
+        <form action="/member/joinProc" method="post" name="joinForm" id="joinForm">
+            <div class="memberContain">
+                <input placeholder="아이디" type="text" name="username" id="userId">
+                <input type="hidden" id="hiddenId">
+                <button type="button" onclick="validateId()">id 중복 확인</button>
+            </div>
+
+            <div class="memberContain">
+                <div class="buttonContain">
+                    <input placeholder="비밀번호" type="password" name="pw" id="originpw">
+                    <input placeholder="비밀번호 확인" type="password" id="pwcheck">
+                    <input type="hidden" id="hiddenPw">
+                </div>
+                <button type="button" onclick="validatePW()">비밀번호 일치 확인</button>
+            </div>
+
+            <div class="memberContain">
+                <input class="webkit" placeholder="이름" type="text" name="name" id="name">
+            </div>
+
+            <div class="memberContain page-box webkit membership-sex">
+                <input type="radio" id="male" name="sex" th:value="m" checked>남
+                <input type="radio" id="female" name="sex" th:value="f">여
+            </div>
+
+            <div class="memberContain">
+                <input placeholder="닉네임" type="text" class="webkit" name="nickname" id="nickname">
+                <input type="hidden" id="hiddenNickname">
+                <button type="button" onclick="validateNickname()">닉네임 중복 확인</button>
+            </div>
+
+            <div class="memberContain">
+                <span class="myPageTitle">생년월일</span>
+                <input placeholder="생년월일" type="date" class="webkit" name="birth" id="birth">
+            </div>
+
+            <div class="memberContain">
+                <select  type="tel" class="webkit" name="phone" id="phone">
+                    <option value="">선택</option>
+                    <option value="010">010</option>
+                    <option value="02">02) 서울</option>
+                    <option value="031">031) 경기</option>
+                    <option value="032">032) 인천</option>
+                    <option value="033">033) 강원</option>
+                    <option value="041">041) 충남</option>
+                    <option value="042">042) 대전</option>
+                    <option value="043">043) 충북</option>
+                    <option value="051">051) 부산</option>
+                    <option value="052">052) 울산</option>
+                    <option value="053">053) 대구</option>
+                    <option value="054">054) 경북</option>
+                    <option value="055">055) 경남</option>
+                    <option value="061">061) 전남</option>
+                    <option value="062">062) 광주</option>
+                    <option value="063">063) 전북</option>
+                    <option value="064">064) 제주</option>
+                </select>
+                <input placeholder="전화번호 - 없이 숫자만 입력해주세요" type="tel" class="webkit" name="phone2" id="phone2">
+                <!--<button type="button">핸드폰 번호 인증</button>-->
+            </div>
+
+            <div class="memberContain">
+                <input placeholder="이메일 예) email@email.com" type="email" class="webkit" name="email" id="email">
+                <input type="hidden" id="hiddenEmail">
+                <button type="button" onclick="sendNumber()">이메일 인증</button>
+            </div>
+
+            <div class="memberContain">
+                <input placeholder="주소" type="text" class="webkit" name="addr1" id="addr" readonly>
+                <button type="button" onclick="searchAddress()">주소 검색</button>
+            </div>
+
+            <button class="mainBtn" type="button" id="submitBtn" onclick="submitProc()">회원가입</button>
+        </form>
+    </div>
+</div>
+
+<th:block th:insert="insert/footer.html"></th:block>
+<!--배경사진-->
+<div id="bg"></div>
+<!-- 모달 창 -->
+<div id="verificationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p>인증번호를 입력하세요:</p>
+        <input type="text" id="verificationCodeInput">
+        <button onclick="checkVerificationCode()">확인</button>
+        <p id="countdownTimer">남은 시간: <span id="time">3분 0초</span></p>
+    </div>
+</div>
+</body>
+</html>

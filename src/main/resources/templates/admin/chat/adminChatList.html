@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif; /* 폰트 설정 */
+            line-height: 1.6; /* 줄 간격 */
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #343a40;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            color: #ffffff;
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .page-index {
+            padding: 20px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .page-box {
+            text-align: center;
+        }
+
+        .page-num {
+            margin: 0 5px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .page-num.active {
+            font-weight: bold;
+        }
+
+        .icon {
+            cursor: pointer;
+        }
+
+        .review-list-pop-back {
+            background-color: #f8f9fa;
+        }
+
+        .popularPosts {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .btn-primary {
+            margin-right: 0.5rem;
+        }
+    </style>
+    <title>채팅 관리 페이지</title>
+</head>
+<body>
+<input name="comuCamp" th:value="${comuCamp}" type="hidden"/>
+<div class="d-flex">
+    <div class="sidebar">
+        <a th:href="@{/admin/}"><h4 class="text-white">CampNavi Admin</h4></a>
+        <a th:href="@{/admin/update_page}">데이터 관리</a>
+        <a th:href="@{/admin/review/list}">리뷰 관리</a>
+        <a th:href="@{/admin/member/list}">회원 관리</a>
+        <a th:href="@{/admin/supervisor/list}">관리자 관리</a>
+        <a th:href="@{/admin/faq/list}">FAQ 관리</a>
+        <a th:href="@{/admin/qna/list}">1:1 문의 관리</a>
+        <a th:href="@{/admin/chat/adminChatList}">채팅 관리</a>
+        <a href="/oauth-login/member/logoutProc">로그아웃</a>
+    </div>
+</div>
+<div class="content" id="app">
+    <h2 class="my-4">채팅 리스트 관리자 페이지</h2>
+
+    <div class="page-index">
+        <!-- 검색 영역 -->
+        <div class="search-container form-inline">
+            <input class="form-control mr-2" id="searchWord" name="searchWord" type="text" v-model="search_word">
+            <button class="btn btn-primary" id="searchButton" type="button" v-on:click="searchRoom()">검색</button>
+        </div>
+
+        <!-- 리스트 영역 -->
+        <section>
+            <div class="row">
+                <div class="col-md-4" v-bind:key="item.chatRoom.roomId" v-for="item in chatrooms">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{item.chatRoom.name}}</h5>
+                            <button class="btn btn-sm btn-danger float-right" type="button"
+                                    v-on:click="deleteRoom(item.chatRoom.roomId)">방삭제
+                            </button>
+                            <details>
+                                <summary class="card-text">참여인원 : {{item.chatRoom.userCount}}</summary>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item" v-for="member in item.chatRoomMemberList">
+                                        [ {{member.name}} ]
+                                        <button class="btn btn-sm btn-danger float-right" type="button"
+                                                v-on:click="banUser(item.chatRoom.roomId, member.mseq)">퇴장조치
+                                        </button>
+                                    </li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script crossorigin="anonymous"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script>
+
+    let comuCamp = $('input[name=comuCamp]').val();
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            roomId: '',
+            room_name: '',
+            chatrooms: [],
+            search_word: '',
+            comuCamp: comuCamp,
+            chatRoomUserList: [],
+            user: '',
+            mseq: '',
+            chatRoomMemberList: [],
+            member: ''
+        },
+        created() {
+            this.findAllRoom();
+        },
+        methods: {
+            findAllRoom: function () {
+                let params = new URLSearchParams();
+                params.append("campName", comuCamp);
+                axios.get('/chat/rooms', {params: params}).then(response => {
+                    this.chatrooms = response.data;
+                });
+            },
+            searchRoom: function () {
+                if ("" === this.search_word) {
+                    alert("검색어를 입력해 주십시요.");
+                    return;
+                } else {
+                    comuCamp = this.search_word
+                    this.findAllRoom();
+                }
+            },
+            banUser: function (roomId, mseq) {
+                if (confirm('회원을 강퇴하시겠습니까?')) {
+                    let params = new URLSearchParams();
+                    params.append('roomId', roomId);
+                    params.append('mseq', mseq);
+                    axios.get('/chat/banUser', { params: params })
+                        .then(response => {
+                            console.log('사용자 퇴장 조치 성공:', response);
+                            this.findAllRoom();
+                        })
+                        .catch(error => {
+                            console.error('사용자 퇴장 조치 오류:', error);
+                        })
+                } else {
+                    alert('취소되었습니다.');
+                }
+            },
+            deleteRoom: function (roomId) {
+                if (confirm('이 방을 삭제하시겠습니까?')) {
+                    let params = new URLSearchParams();
+                    params.append('roomId', roomId);
+                    axios.get('/chat/deleteRoom', {params: params})
+                        .then(response => {
+                            // 성공 시 처리할 내용
+                            console.log('채팅방 삭제 성공:', response);
+                            // 사용자 목록 다시 불러오기
+                            this.findAllRoom();
+                        })
+                        .catch(error => {
+                            // 오류 발생 시 처리할 내용
+                            console.error('방삭제 오류:', error);
+                        })
+                } else {
+                    alert('취소되었습니다.');
+                }
+            }
+
+
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/mainBG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<style>
+    .active-page {
+        font-weight: bold;
+    }
+</style>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var message = /*[[${msg}]]*/ '';
+    if (message != null) {
+        alert(message);
+    }
+    /*]]>*/
+</script>
+<body>
+<th:block th:insert="insert/header.html"></th:block>
+
+<div class="box centerBox" id="myPageContainer">
+    <div class="myPageSpace">
+        <div class="myPageUserIdImg">
+            <div>
+                <!--프로필 사진-->
+                <div class="box" id="profileImg">
+                    <div class="myPageProPicture" id="myPageProPicture">
+                        <form id="uploadForm">
+                            <input id="backURL" th:value="${img != null ? img : ''}" type="hidden">
+                            <input id="img" type="hidden">
+                            <input hidden="hidden" id="myPagePictureUploadInput" type="file">
+                            <img alt="수정아이콘" class="correctionImg" id="correctionImg" src="/assets/images/icon/pen.png">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memberNickNameRead"><h1 th:text="${member.nickname}"></h1></div>
+            <div class="buttonContain" id="memberNickNameChange">
+                <input class="myPageInput" id="nickname" name="nickname" th:value="${member.nickname}" type="text"/>
+                <input id="originNickname" type="hidden">
+                <input id="hiddenNickname" type="hidden">
+                <input id="hiddenMseq" type="hidden" th:value="${member.mseq}">
+                <button class="myPageBtn mainBtn" onclick="validateNickname()" type="button">닉네임 중복 확인</button>
+            </div>
+            <div class="buttonContain" id="myPageDetailContain">
+                <input checked class="detailBtn" id="myPageInfoBtn" name="btn" type="radio">
+                <label for="myPageInfoBtn">내 정보</label>
+                <input class="detailBtn" id="myPageReviewBtn" name="btn" type="radio">
+                <label for="myPageReviewBtn" id="reviewLabel">내가 남긴 후기</label>
+                <input class="detailBtn" id="myPageSaveBtn" name="btn" type="radio">
+                <label for="myPageSaveBtn" id="saveLabel">찜한 목록 보기</label>
+                <input class="detailBtn" id="myPageQnaBtn" name="btn" type="radio">
+                <label for="myPageQnaBtn" id="qnaLabel">고객문의</label>
+            </div>
+        </div>
+        <!--내 정보-->
+        <div class="myPageArea" id="myPageInfo">
+            <form action="/member/mypage/edit/detail" id="editMypageForm" method="post">
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">기본정보</h3>
+                    <hr>
+                    <div class="myPageTitle">아이디</div>
+                    <div th:text="${member.username.length() > 17 ? member.username.substring(0, 18) + '...' : member.username}"></div>
+                    <hr>
+                    <div class="myPageTitle">이름</div>
+                    <div th:text="${member.name}"></div>
+                    <hr>
+                    <div class="myPageTitle">성별</div>
+                    <div id="memberSexRead"
+                         th:text="${member.sex == 'm' ? '남' : (member.sex == 'f' ? '여' : '성별을 입력해주세요.')}"></div>
+                    <div id="memberSexChange">
+                        남<input checked id="male" name="sex" value="m" type="radio"/>
+                        여<input id="female" name="sex" value="f" type="radio"/>
+                        <input type="hidden" id="memberSex" th:value="${member.sex}">
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">생년월일</div>
+                    <div id="memberBirthRead" th:text="${member.birth}"></div>
+                    <input type="hidden" name="birth" id="birth" th:value="${member.birth}">
+                    <hr>
+                </div>
+
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">연락처</h3>
+                    <hr>
+                    <div class="myPageTitle">전화번호</div>
+                    <div id="memberPhoneRead" th:text="${member.phone != null ? member.phone : '전화번호를 입력해주세요.'}"></div>
+                    <div id="memberPhoneChange">
+                        <select type="tel" class="webkit" name="phone" id="phone">
+                            <option value="">선택</option>
+                            <option id="010" value="010">010</option>
+                            <option id="02" value="02">02) 서울</option>
+                            <option id="031" value="031">031) 경기</option>
+                            <option id="032" value="032">032) 인천</option>
+                            <option id="033" value="033">033) 강원</option>
+                            <option id="041" value="041">041) 충남</option>
+                            <option id="042" value="042">042) 대전</option>
+                            <option id="043" value="043">043) 충북</option>
+                            <option id="051" value="051">051) 부산</option>
+                            <option id="052" value="052">052) 울산</option>
+                            <option id="053" value="053">053) 대구</option>
+                            <option id="054" value="054">054) 경북</option>
+                            <option id="055" value="055">055) 경남</option>
+                            <option id="061" value="061">061) 전남</option>
+                            <option id="062" value="062">062) 광주</option>
+                            <option id="063" value="063">063) 전북</option>
+                            <option id="064" value="064">064) 제주</option>
+                        </select>
+                        <input type="hidden" id="prefixPhone" th:value="${member.phone.substring(0, 2) == '02' ? '02' : member.phone.substring(0, 3)}">
+                        <input th:value="${(member.phone == null || member.phone == '') ? '　' : (member.phone.substring(0, 2) == '02' ? member.phone.substring(2) : member.phone.substring(3))}"
+                               type="text" class="myPageInput" name="phone2" id="phone2">
+                        <input th:value="${(member.phone == null || member.phone == '') ? '　' : (member.phone.substring(0, 2) == '02' ? member.phone.substring(2) : member.phone.substring(3))}"
+                               type="hidden" id="suffixPhone">
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">이메일</div>
+                    <div>[[${member.email}]]</div>
+                    <hr>
+                </div>
+
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">주소</h3>
+                    <hr>
+                    <div class="myPageTitle">도로명주소</div>
+                    <div id="memberAddr1Read" th:text="${member.addr1 != null ? member.addr1.trim() : '도로명주소를 입력해주세요.'}"></div>
+                    <div id="memberAddr1Change">
+                        <input class="myPageInput" id="addr1" name="addr1" readonly
+                               th:value="${member.addr1 != null ? member.addr1.trim() : null}" type="text"/>
+                        <input id="originalAddr1" type="hidden" th:value="${member.addr1 != null ? member.addr1.trim() : null}"/>
+                        <button class="myPageBtn mainBtn" onclick="searchAddress()" type="button">주소 검색</button>
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">상세주소</div>
+                    <div id="memberAddr2Read" th:text="${member.addr2 != null ? member.addr2.trim() : '　'}"></div>
+                    <div id="memberAddr2Change">
+                        <input class="myPageInput" id="addr2" name="addr2"
+                               th:value="${member.addr2 != null ? member.addr2.trim() : null}" type="text"/>
+                        <input id="originalAddr2" type="hidden" th:value="${member.addr2 != null ? member.addr2.trim() : null}"/>
+                    </div>
+                    <hr>
+                </div>
+            </form>
+
+            <div class="myPageBox">
+                <h3 class="myPage-info-title">SNS 로그인 여부</h3>
+                <hr>
+                <div th:text="${member.provider != 'campingnavi' ? member.provider : '홈페이지'}"></div>
+            </div>
+            <div>
+                <button class="webkit" id="memberDeleteBtn" type="button">회원 탈퇴</button>
+            </div>
+        </div>
+
+        <!--내가 남긴 후기-->
+        <div class="myPageArea" id="myPageReview">
+            <div class="myPageBox myPage-review-box" id="myPage-review-box-review">
+                <!-- 리뷰 목록 나오는 페이지 -->
+                <div>
+                    <div id="review_area"></div>
+                    <input id="hiddenTotal2" type="hidden">
+
+                </div>
+            </div>
+        </div>
+
+
+        <!--찜 목록-->
+        <div class="myPageArea" id="myPageSave">
+            <div class="myPageBox myPage-review-box" id="myPage-review-box-save">
+                <!--찜 목록 나오는 페이지-->
+                <div>
+                    <div id="list_area"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 문의 -->
+        <div class="myPageArea" id="myPageQna">
+            <div class="myPageBox myPage-review-box" id="myPage-review-box-qna">
+                <!--찜 목록 나오는 페이지-->
+                <div>
+                    <div id="qna-area"></div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    <div class="buttonContain">
+        <button class="mainBtn" id="myPageChange" type="button">수정하기</button>
+        <button class="mainBtn" id="myPageRead" type="button">수정완료</button>
+        <button id="myPageCancel" type="button">수정취소</button>
+        <button id="myPageBack" onclick="goBack()" type="button">뒤로가기</button>
+    </div>
+</div>
+
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+<script th:inline="javascript">
+    $(document).ready(function () {
+        // 각 버튼과 내용 요소를 가져옵니다.
+        let myPageInfoBtn = document.getElementById('myPageInfoBtn');
+        let myPageReviewBtn = document.getElementById('myPageReviewBtn');
+        let myPageSaveBtn = document.getElementById('myPageSaveBtn');
+        let qnaBtn = document.getElementById('myPageQnaBtn')
+
+        let myPageInfo = document.getElementById('myPageInfo');
+        let myPageReview = document.getElementById('myPageReview');
+        let myPageSave = document.getElementById('myPageSave');
+        let myPageQna = document.getElementById('myPageQna');
+
+        let myPageChange = document.getElementById('myPageChange');
+        let myPageBack = document.getElementById('myPageBack');
+        let myPageRead = document.getElementById('myPageRead');
+        let myPageCancel = document.getElementById('myPageCancel');
+
+        // myPageInfoBtn을 클릭하면 myPageInfo를 보이게 하고, 나머지는 숨깁니다.
+        myPageInfoBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'block';
+            myPageReview.style.display = 'none';
+            myPageSave.style.display = 'none';
+            myPageQna.style.display = 'none';
+            myPageChange.style.display = 'block';
+            myPageRead.style.display = 'none';
+            myPageCancel.style.display = 'none';
+        });
+
+        // myPageReviewBtn을 클릭하면 myPageReview를 보이게 하고, 나머지는 숨깁니다.
+        myPageReviewBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'none';
+            myPageReview.style.display = 'block';
+            myPageSave.style.display = 'none';
+            myPageQna.style.display = 'none';
+            myPageChange.style.display = 'none';
+            myPageRead.style.display = 'none';
+            myPageCancel.style.display = 'none';
+        });
+
+        // myPageSaveBtn을 클릭하면 myPageSave를 보이게 하고, 나머지는 숨깁니다.
+        myPageSaveBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'none';
+            myPageReview.style.display = 'none';
+            myPageQna.style.display = 'none';
+            myPageSave.style.display = 'block';
+            myPageChange.style.display = 'none';
+            myPageRead.style.display = 'none';
+            myPageCancel.style.display = 'none';
+        });
+
+        // qnaBtn을 클릭하면 myPgaeQna를 보이게 하고, 나머지는 숨깁니다.
+        qnaBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'none';
+            myPageReview.style.display = 'none';
+            myPageSave.style.display = 'none';
+            myPageQna.style.display = 'block';
+            myPageChange.style.display = 'none';
+            myPageRead.style.display = 'none';
+            myPageCancel.style.display = 'none';
+        });
+
+        document.getElementById('myPageProPicture').style.display = 'none';
+        let img = $("#backURL").val();
+        if (img != null) {
+            document.getElementById('profileImg').style.backgroundImage = img;
+        }
+    })
+
+    document.getElementById('myPageChange').addEventListener('click', function () {
+        let prefix = $("#prefixPhone").val();
+        let suffix = $("#suffixPhone").val();
+        let sex = $("#memberSex").val();
+        $("#originNickname").val($("#nickname").val());
+        $("#hiddenNickname").val('');
+
+        // Change가 붙은 요소들을 block으로 설정
+        document.getElementById('memberSexChange').style.display = 'block';
+        document.getElementById('memberPhoneChange').style.display = 'block';
+        document.getElementById('memberAddr1Change').style.display = 'block';
+        document.getElementById('memberAddr2Change').style.display = 'block';
+        document.getElementById('memberNickNameChange').style.display = 'block';
+        document.getElementById('myPageRead').style.display = 'block';
+        document.getElementById('myPageProPicture').style.display = 'flex';
+        document.getElementById('myPageCancel').style.display = 'block';
+
+        document.getElementById('phone').value = prefix;
+        document.getElementById('phone2').value = suffix;
+        document.getElementById('addr1').value = document.getElementById('originalAddr1').value;
+        document.getElementById('addr2').value = document.getElementById('originalAddr2').value;
+
+        if (sex === 'm') {
+            document.getElementById('male').checked = true;
+            document.getElementById('female').checked = false;
+        } else {
+            document.getElementById('male').checked = false;
+            document.getElementById('female').checked = true;
+        }
+
+        // Read가 붙은 요소들을 none으로 설정
+        document.getElementById('memberSexRead').style.display = 'none';
+        document.getElementById('memberPhoneRead').style.display = 'none';
+        document.getElementById('memberAddr1Read').style.display = 'none';
+        document.getElementById('memberAddr2Read').style.display = 'none';
+        document.getElementById('memberNickNameRead').style.display = 'none';
+        document.getElementById('myPageChange').style.display = 'none';
+        document.getElementById('myPageBack').style.display = 'none';
+
+        // radio 버튼 숨김
+        document.getElementById('myPageReviewBtn').style.display = 'none';
+        document.getElementById('myPageQnaBtn').style.display = 'none';
+        document.getElementById('myPageSaveBtn').style.display = 'none';
+
+        $("#reviewLabel").hide();
+        $("#saveLabel").hide();
+        $("#qnaLabel").hide();
+    });
+
+    document.getElementById('myPageRead').addEventListener('click', function () {
+        let nickname = $("#nickname").val();
+        let birth = $("#birth").val();
+        let phone = $("#phone").val();
+        let phone2 = $("#phone2").val().replace(' ', '');
+        let addr1 = $("#addr1").val();
+        let addr2 = $("#addr2").val().trim();
+        let img = $("#backURL").val();
+        const phonePattern = /^(\d{7,8})$/;
+        let formData = new FormData();
+        formData.append('nickname', nickname);
+        formData.append('birth', birth);
+        formData.append('phone', phone);
+        formData.append('phone2', phone2);
+        formData.append('addr1', addr1);
+        formData.append('addr2', addr2);
+        let fileInput = $('#myPagePictureUploadInput')[0];
+        if (fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
+        }
+
+        const getValue = () => {
+            let curr_value;
+            const radioValue = document.getElementsByName("sex");
+            radioValue.forEach((radio) => {
+                if (radio.checked) {
+                    curr_value = radio.defaultValue;
+                }
+            });
+            return curr_value;
+        };
+
+        formData.append('img', img);
+        formData.append('sex', getValue());
+
+
+        if (nickname == "") {
+            alert("사이트에서 사용할 닉네임을 입력해주세요!");
+            $("#nickname").focus();
+        } else if (nickname != $("#originNickname").val() && nickname != $("#hiddenNickname").val()) {
+            alert("닉네임 중복확인을 진행해주세요!");
+            $("#nickname").focus();
+        } else if (birth == "" || birth == "n") {
+            alert("생일을 입력해주세요!");
+            $("#birth").focus();
+        } else if (phone == "" || phone == "n") {
+            alert("전화번호를 입력해주세요!");
+            $("#phone").focus();
+        } else if (phonePattern.test(phone2) !== true) {
+            alert("전화번호를 입력해주세요!");
+            $("#phone2").focus();
+        } else if (addr1 == "" || addr1 == "n") {
+            alert("도로명주소를 입력해주세요!");
+            $("#addr1").focus();
+        } else {
+            $.ajax({
+                url: "/member/mypage/edit/detail",
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    document.getElementById('memberSexRead').textContent = response.sex == 'm' ? '남' : '여';
+                    document.getElementById('memberSex').value = response.sex;
+                    document.getElementById('memberAddr1Read').textContent = response.addr1;
+                    document.getElementById('addr1').value = response.addr1;
+                    document.getElementById('originalAddr1').value = response.addr1;
+                    document.getElementById('memberAddr2Read').textContent = response.addr2 != '' ? response.addr2 : '　';
+                    document.getElementById('addr2').value = response.addr2.trim();
+                    document.getElementById('originalAddr2').value = response.addr2.trim();
+                    document.getElementById('nickname').value = response.nickname;
+                    document.getElementById('originNickname').value = response.nickname;
+                    document.getElementById('hiddenNickname').value = '';
+                    var memberNick = $("#memberNickNameRead")
+                    memberNick.empty();
+                    memberNick.html('<h1>' + response.nickname + '</h1>');
+                    document.getElementById('memberPhoneRead').textContent = response.phone + response.phone2;
+                    document.getElementById('prefixPhone').value = phone;
+                    document.getElementById('suffixPhone').value = phone2;
+
+                    document.getElementById('profileImg').style.backgroundImage = img;
+
+                    // Change가 붙은 요소들을 block으로 설정
+                    document.getElementById('memberSexChange').style.display = 'none';
+                    document.getElementById('memberPhoneChange').style.display = 'none';
+                    document.getElementById('memberAddr1Change').style.display = 'none';
+                    document.getElementById('memberAddr2Change').style.display = 'none';
+                    document.getElementById('memberNickNameChange').style.display = 'none';
+                    document.getElementById('myPageRead').style.display = 'none';
+                    document.getElementById('myPageProPicture').style.display = 'none';
+
+                    // Read가 붙은 요소들을 none으로 설정
+                    document.getElementById('memberSexRead').style.display = 'block';
+                    document.getElementById('memberPhoneRead').style.display = 'block';
+                    document.getElementById('memberAddr1Read').style.display = 'block';
+                    document.getElementById('memberAddr2Read').style.display = 'block';
+                    document.getElementById('memberNickNameRead').style.display = 'block';
+                    document.getElementById('myPageBack').style.display = 'block';
+
+                    $("#reviewLabel").show();
+                    $("#saveLabel").show();
+                    $("#qnaLabel").show();
+
+
+                    document.getElementById('myPageChange').style.display = 'block';
+
+                    // radio버튼 contents로 설정
+                    document.getElementById('myPageReviewBtn').style.display = 'contents';
+                    document.getElementById('myPageQnaBtn').style.display = 'contents';
+                    document.getElementById('myPageSaveBtn').style.display = 'contents';
+                    document.getElementById('myPageCancel').style.display = 'none';
+                    alert("수정완료");
+                },
+                error: function (error) {
+                    alert("데이터 전송 실패");
+                    console.log("error:" + error);
+                }
+            })
+        }
+    });
+
+    document.getElementById('myPageCancel').addEventListener('click', function () {
+        document.getElementById('nickname').value = document.getElementById('originNickname').value;
+        document.getElementById('hiddenNickname').value = '';
+        document.getElementById('phone').value = document.getElementById('prefixPhone').value;
+        document.getElementById('phone2').value = document.getElementById(('suffixPhone')).value;
+        document.getElementById('addr1').value = document.getElementById('originalAddr1').value;
+        document.getElementById('addr2').value = document.getElementById(('originalAddr2')).value;
+
+        // Change가 붙은 요소들을 block으로 설정
+        document.getElementById('memberSexChange').style.display = 'none';
+        document.getElementById('memberPhoneChange').style.display = 'none';
+        document.getElementById('memberAddr1Change').style.display = 'none';
+        document.getElementById('memberAddr2Change').style.display = 'none';
+        document.getElementById('memberNickNameChange').style.display = 'none';
+        document.getElementById('myPageRead').style.display = 'none';
+        document.getElementById('myPageProPicture').style.display = 'none';
+        document.getElementById('myPageBack').style.display = 'block';
+
+        document.getElementById('myPageReviewBtn').style.display = 'contents';
+        document.getElementById('myPageSaveBtn').style.display = 'contents';
+        document.getElementById('myPageQnaBtn').style.display = 'contents';
+
+
+        // Read가 붙은 요소들을 none으로 설정
+        $("#reviewLabel").show();
+        $("#saveLabel").show();
+        $("#qnaLabel").show();
+
+        document.getElementById('memberSexRead').style.display = 'block';
+        document.getElementById('memberPhoneRead').style.display = 'block';
+        document.getElementById('memberAddr1Read').style.display = 'block';
+        document.getElementById('memberAddr2Read').style.display = 'block';
+        document.getElementById('memberNickNameRead').style.display = 'block';
+        document.getElementById('myPageChange').style.display = 'block';
+        document.getElementById('myPageCancel').style.display = 'none';
+    });
+
+    document.getElementById('myPageProPicture').addEventListener('click', function () {
+        document.getElementById('myPagePictureUploadInput').click();
+    });
+
+    document.getElementById('myPagePictureUploadInput').addEventListener('change', function (e) {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+
+        reader.onloadend = function () {
+            document.getElementById('profileImg').style.backgroundImage = 'url("' + reader.result + '")';
+            $("#backURL").val('url("' + reader.result + '")');
+        }
+
+        if (file) {
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('profileImg').style.backgroundImage = '';
+        }
+
+    });
+
+    function goBack() {
+        history.go(-1);
+    }
+
+    // 초기 페이지 번호를 정의합니다.
+    let page = 0;
+
+    // 리뷰를 불러오는 함수를 정의합니다.
+    function loadReviews() {
+        console.log(page);
+        $.ajax({
+            type: 'GET',
+            url: '/member/mypage/review',
+            data: {
+                page: page,
+                size: 5
+            },
+            success: function (data) {
+                let reviewArea = $("#review_area");
+                let reviews = data.content;
+                let reviewHTML = "";
+                if (reviews.length > 0) {
+                    reviews.forEach(function (review) {
+                        let titleLen = review.title.length;
+                        if (titleLen <= 6) {
+                            reviewHTML += '<h3> ' + review.title + '</h3>';
+                        } else {
+                            reviewHTML += '<h3>' + review.title.substring(0, 6) + '...</h3>';
+                        }
+                        reviewHTML += '<a class="myPageSaveLink" href="/review/detail/' + review.vseq + '">리뷰 평점: ' + review.likes + '</a><br>';
+                        let campLen = review.camp.name.length;
+                        if (campLen <= 6) {
+                            reviewHTML += '<a class="myPageSavaLink" href="/camp/detail/?mapX=' + review.camp.mapX + '&mapY=' + review.camp.mapY + '&contentId=' + review.camp.contentId + '&cseq=' + review.camp.cseq + '">' + review.camp.name + '</a><br>';
+                        } else {
+                            reviewHTML += '<a class="myPageSavaLink" href="/camp/detail/?mapX=' + review.camp.mapX + '&mapY=' + review.camp.mapY + '&contentId=' + review.camp.contentId + '&cseq=' + review.camp.cseq + '">' + review.camp.name.substring(0, 6) + '...</a><br>';
+                        }
+                        let contentLen = review.content.length;
+                        if (contentLen <= 20) {
+                            reviewHTML += '<p>' + review.content + '</p>';
+                        } else {
+                            reviewHTML += '<p>' + review.content.substring(0, 20) + '...</p>';
+                        }
+                        let formattedDate = moment(review.createdAt).format('YYYY-MM-DD HH:mm:ss');
+                        reviewHTML += '<p>' + formattedDate + '</p>';
+                    });
+                    reviewArea.append(reviewHTML);
+                } else {
+                    if (reviewArea.find('strong').length === 0) {
+                        reviewArea.append('<strong>남긴 리뷰가 없습니다.</strong>');
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("AJAX 요청 실패 :" + textStatus + ", " + errorThrown);
+            }
+        });
+    }
+
+    // 초기 리뷰 세트를 불러옵니다.
+    loadReviews();
+
+    // 스크롤 이벤트를 처리합니다.
+    $('#myPage-review-box-review').scroll(function () {
+        if ($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight) {
+            // 페이지 번호를 증가시킵니다.
+            page++;
+            // 다음 세트의 리뷰를 불러옵니다.
+            loadReviews();
+        }
+    });
+
+    /*찜목록 스크롤 페이징*/
+    // 초기 페이지 번호를 정의합니다.
+    let page2 = 0;
+
+    // 리뷰를 불러오는 함수를 정의합니다.
+    function loadSaves() {
+        console.log(page2);
+        $.ajax({
+            type: 'GET',
+            url: '/member/mypage/paging',
+            data: {
+                page: page2,
+                size: 15
+            },
+            success: function (data) {
+                let listArea = $("#list_area");
+                let list = data.content;
+                let listHTML = "";
+                if (list.length > 0) {
+                    list.forEach(function (recommend) {
+                        listHTML += '<div>';
+                        listHTML += '<div class="buttonContain">';
+                        listHTML += '<h3 class="myPageSaveTitle">' + recommend.camp.name + '</h3>';
+                        listHTML += '<a class="myPageSavaLink" href="/camp/detail/?mapX=' + recommend.camp.mapX + '&mapY=' + recommend.camp.mapY + '&contentId=' + recommend.camp.contentId + '&cseq=' + recommend.camp.cseq + '">상세보기</a>';
+                        listHTML += '</div>';
+                        listHTML += '<hr>';
+                        listHTML += '</div>';
+                    });
+                    listArea.append(listHTML);
+                } else {
+                    if (listArea.find('strong').length === 0) {
+                        listArea.append('<strong>찜한 캠핑장이 없습니다.</strong>');
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("AJAX 요청 실패 :" + textStatus + ", " + errorThrown);
+            }
+        });
+    }
+
+    // 초기 리뷰 세트를 불러옵니다.
+    loadSaves();
+
+    // 스크롤 이벤트를 처리합니다.
+    $('#myPage-review-box-save').scroll(function () {
+        if ($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight) {
+            // 페이지 번호를 증가시킵니다.
+            page2++;
+            // 다음 세트의 리뷰를 불러옵니다.
+            loadSaves();
+        }
+    });
+
+
+    /*qna 스크롤 페이징*/
+    // 초기 페이지 번호를 정의합니다.
+    let page3 = 0;
+
+    // 리뷰를 불러오는 함수를 정의합니다.
+    function loadQnas() {
+        console.log(page3);
+        $.ajax({
+            type: 'GET',
+            url: '/member/mypage/qna',
+            data: {
+                page: page3,
+                size: 15
+            },
+            success: function (data) {
+                let qnaArea = $("#qna-area");
+                let qnas = data.content;
+                let qnaHTML = "";
+                if (qnas.length > 0) {
+                    qnas.forEach(function (qna) {
+                        let titleLen = qna.title.length;
+                        if (titleLen <= 6) {
+                            qnaHTML += '<a class="myPageSaveLink" href="/qna/oneByone/detail/' + qna.qseq + '"><h3>제목: ' + qna.title + '</h3></a>';
+                        } else {
+                            qnaHTML += '<a class="myPageSaveLink" href="/qna/oneByone/detail/' + qna.qseq + '"><h3>제목: ' + qna.title.substring(0, 6) + '...</h3></a>';
+                        }
+
+                        let contentLen = qna.content.length;
+                        if (contentLen <= 20) {
+                            qnaHTML += '<p>' + qna.content + '</p>';
+                        } else {
+                            qnaHTML += '<p>' + qna.content.substring(0, 20) + '...</p>';
+                        }
+                        let formattedDate = moment(qna.createdAt).format('YYYY-MM-DD HH:mm:ss');
+                        qnaHTML += '<p>' + formattedDate + '</p><hr>';
+                    });
+                    qnaArea.append(qnaHTML);
+                } else {
+                    if (qnaArea.find('strong').length === 0) {
+                        qnaArea.append('<strong>등록한 문의가 없습니다.</strong>');
+                    }
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("AJAX 요청 실패 :" + textStatus + ", " + errorThrown);
+            }
+        });
+    }
+
+    // 초기 리뷰 세트를 불러옵니다.
+    loadQnas();
+
+    // 스크롤 이벤트를 처리합니다.
+    $('#myPage-review-box-qna').scroll(function () {
+        if ($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight) {
+            // 페이지 번호를 증가시킵니다.
+            page3++;
+            // 다음 세트의 리뷰를 불러옵니다.
+            loadQnas();
+        }
+    });
+
+    function validateNickname() {
+        let nickname = $("#nickname").val();
+        let original_nickname = $("#originNickname").val();
+        if (nickname != original_nickname) {
+            $.ajax({
+                type: 'POST',
+                url: '/member/validateNickname',
+                data: {
+                    nickname: nickname
+                },
+                success: function (data) {
+                    let result = data.result;
+                    if (result === "success") {
+                        $("#hiddenNickname").val(nickname);
+                        alert("사용 가능한 닉네임 입니다.")
+                        $('#myPageRead').prop('disabled', false);
+                    } else {
+                        alert("이미 존재하는 닉네임 입니다.")
+                        $('#myPageRead').prop('disabled', true);
+                        $("#nickname").focus()
+                    }
+
+                },
+                error: function (error) {
+                    alert("전송 실패")
+                }
+            });
+        } else {
+            alert("닉네임이 수정되지 않았습니다.")
+        }
+    }
+
+    function searchAddress() {
+        let postcodePopup = new daum.Postcode({
+            oncomplete: function (data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                let roadAddr = data.roadAddress; // 도로명 주소 변수
+                let extraRoadAddr = ''; // 참고 항목 변수
+
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if (data.buildingName !== '' && data.apartment === 'Y') {
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if (extraRoadAddr !== '') {
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById("addr1").value = roadAddr;
+                setTimeout(function () {
+                    postcodePopup.close();
+                }, 0);
+            }
+        });
+        postcodePopup.open();
+    }
+
+    document.getElementById('memberDeleteBtn').addEventListener('click', function () {
+        let mseq = $("#hiddenMseq").val();
+        let pt = prompt("정말로 탈퇴하시겠습니까? 탈퇴하시려면 '탈퇴한다'를 적어주세요.");
+        if (pt !== null && pt === '탈퇴한다') {
+            location.href = "/member/mypage/delete/" + mseq;
+        } else if (pt.length > 1 && pt !== '탈퇴한다') {
+            alert('잘못입력하셨습니다.');
+        } else {
+            alert("탈퇴를 취소하셨습니다.")
+        }
+    })
+
+</script>
+
+<div id="bg"></div>
+</body>
+</html>

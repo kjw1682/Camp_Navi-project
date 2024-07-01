@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/mainBG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var message = /*[[${msg}]]*/ '';
+    if (message != null) {
+        alert(message);
+    }
+    /*]]>*/
+</script>
+<body>
+
+<div class="box centerBox" id="myPageContainer">
+
+    <div class="myPageSpace">
+        <div class="myPageUserIdImg">
+            <div>
+                <!--프로필 사진-->
+                <div class="box" id="profileImg">
+                    <div class="myPageProPicture" id="myPageProPicture">
+                        <form id="uploadForm">
+                            <input id="backURL" th:value="${img != null ? img : ''}" type="hidden">
+                            <input id="img" type="hidden">
+                            <input hidden="hidden" id="myPagePictureUploadInput" type="file">
+                            <img alt="수정아이콘" class="correctionImg" id="correctionImg" src="/assets/images/icon/pen.png">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="memberNickNameRead">
+                <h1 id="nickname_view" th:text="${member.nickname}"></h1>
+                <button id="valNick" class="myPageBtn mainBtn" onclick="validateNickname()" type="button">닉네임 변경</button>
+            </div>
+            <div class="buttonContain" id="memberNickNameChange">
+                <input class="myPageInput" id="nickname" name="nickname" th:value="${member.nickname}" type="text"/>
+                <input type="hidden" id="originNickname" th:value="${member.nickname}">
+                <input type="hidden" id="hiddenNickname">
+            </div>
+            <div class="buttonContain" id="myPageDetailContain">
+                <input checked class="detailBtn" id="myPageInfoBtn" name="btn" type="radio">
+                <label for="myPageInfoBtn">내 정보</label>
+            </div>
+        </div>
+
+        <!--내 정보-->
+        <div class="myPageArea" id="myPageInfo">
+            <form id="editMypageForm" action="/member/mypage/edit/detail" method="post">
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">기본정보</h3>
+                    <hr>
+                    <!--
+                    <div class="myPageTitle">아이디</div>
+                    <div th:text="${member.username}"></div>
+                    <hr>
+                    -->
+                    <div class="myPageTitle">이름</div>
+                    <div id="name" th:text="${member.name}"></div>
+                    <hr>
+                    <div class="myPageTitle">성별</div>
+                    <div id="memberSexRead" th:text="${member.sex == 'm' ? '남' : (member.sex == 'f' ? '여' : '성별을 입력해주세요.')}"></div>
+                    <div id="memberSexChange">
+                        남<input checked id="male" name="sex" th:value="m" type="radio"/>
+                        여<input id="female" name="sex" th:value="f" type="radio"/>
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">생년월일</div>
+                    <div id="memberBirthRead" th:text="${member.birth != null ? member.birth : '생년월일을 입력해주세요.'}"></div>
+                    <div class="myPageInput" id="memberBirthChange">
+                        <input id="birth" name="birth" th:value="${member.birth != null ? member.birth : ''}" type="date"/>
+                    </div>
+                    <hr>
+                </div>
+
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">연락처</h3>
+                    <hr>
+                    <div class="myPageTitle">전화번호</div>
+                    <div id="memberPhoneRead" th:text="${member.phone != null ? member.phone : '전화번호를 입력해주세요.'}"></div>
+                    <div id="memberPhoneChange">
+                        <select  type="tel" class="webkit" name="phone" id="phone">
+                            <option value="">선택</option>
+                            <option value="010">010</option>
+                            <option value="02">02) 서울</option>
+                            <option value="031">031) 경기</option>
+                            <option value="032">032) 인천</option>
+                            <option value="033">033) 강원</option>
+                            <option value="041">041) 충남</option>
+                            <option value="042">042) 대전</option>
+                            <option value="043">043) 충북</option>
+                            <option value="051">051) 부산</option>
+                            <option value="052">052) 울산</option>
+                            <option value="053">053) 대구</option>
+                            <option value="054">054) 경북</option>
+                            <option value="055">055) 경남</option>
+                            <option value="061">061) 전남</option>
+                            <option value="062">062) 광주</option>
+                            <option value="063">063) 전북</option>
+                            <option value="064">064) 제주</option>
+                        </select>
+                        <input th:value="${member.phone != null ? member.phone.replace(' ', '') : null}" type="text" class="myPageInput" name="phone2" id="phone2">
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">이메일</div>
+                    <div th:text="${member.email}"></div>
+                    <hr>
+                </div>
+
+                <div class="myPageBox">
+                    <h3 class="myPage-info-title">주소</h3>
+                    <hr>
+                    <div class="myPageTitle">도로명주소</div>
+                    <div id="memberAddr1Read" th:text="${member.addr1 != null ? member.addr1.trim() : '도로명주소를 입력해주세요.'}"></div>
+                    <div id="memberAddr1Change">
+                        <input class="myPageInput" id="addr1" name="addr1" readonly
+                               th:value="${member.addr1 != null ? member.addr1.trim() : null}" type="text"/>
+                        <button class="myPageBtn mainBtn" onclick="searchAddress()" type="button">주소 검색</button>
+                    </div>
+                    <hr>
+                    <div class="myPageTitle">상세주소</div>
+                    <div id="memberAddr2Read" th:text="${member.addr2 != null ? member.addr2.trim() : null}"></div>
+                    <div id="memberAddr2Change">
+                        <input class="myPageInput" id="addr2" name="addr2"
+                               th:value="${member.addr2 != null ? member.addr2.trim() : null}" type="text"/>
+                    </div>
+                    <hr>
+                </div>
+            </form>
+
+            <div class="myPageBox">
+                <h3 class="myPage-info-title">SNS 로그인 여부</h3>
+                <hr>
+                <div th:text="${member.provider != 'campingnavi' ? member.provider : '홈페이지'}"></div>
+                <input type="hidden" id="originProvider" th:value="${member.provider}">
+            </div>
+        </div>
+
+    </div>
+    <div class="buttonContain">
+        <button class="mainBtn" id="myPageChange" type="button">수정하기</button>
+        <button class="mainBtn" id="myPageRead" type="button">수정완료</button>
+        <button onclick="location.href = '/oauth-login/member/logoutProc'" type="button">뒤로가기</button>
+    </div>
+</div>
+
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+
+<script>
+    $(document).ready(function () {
+        var img = $("#backURL").val();
+        if (img != null) {
+            document.getElementById('profileImg').style.backgroundImage = img;
+        }
+    })
+
+    $(document).ready(function() {
+        // Change가 붙은 요소들을 block으로 설정
+        document.getElementById('memberSexChange').style.display = 'block';
+        document.getElementById('memberBirthChange').style.display = 'block';
+        document.getElementById('memberPhoneChange').style.display = 'block';
+        document.getElementById('memberAddr1Change').style.display = 'block';
+        document.getElementById('memberAddr2Change').style.display = 'block';
+        document.getElementById('memberNickNameChange').style.display = 'none';
+        document.getElementById('myPageRead').style.display = 'block';
+
+        // Read가 붙은 요소들을 none으로 설정
+        document.getElementById('memberSexRead').style.display = 'none';
+        document.getElementById('memberBirthRead').style.display = 'none';
+        document.getElementById('memberPhoneRead').style.display = 'none';
+        document.getElementById('memberAddr1Read').style.display = 'none';
+        document.getElementById('memberAddr2Read').style.display = 'none';
+        document.getElementById('memberNickNameRead').style.display = 'block';
+        document.getElementById('myPageChange').style.display = 'none';
+    });
+
+    window.onload = function () {
+        // 각 버튼과 내용 요소를 가져옵니다.
+        var myPageInfoBtn = document.getElementById('myPageInfoBtn');
+        var myPageReviewBtn = document.getElementById('myPageReviewBtn');
+        var myPageSaveBtn = document.getElementById('myPageSaveBtn');
+
+        var myPageInfo = document.getElementById('myPageInfo');
+        var myPageReview = document.getElementById('myPageReview');
+        var myPageSave = document.getElementById('myPageSave');
+
+        // myPageInfoBtn을 클릭하면 myPageInfo를 보이게 하고, 나머지는 숨깁니다.
+        myPageInfoBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'block';
+            myPageReview.style.display = 'none';
+            myPageSave.style.display = 'none';
+        });
+
+        // myPageReviewBtn을 클릭하면 myPageReview를 보이게 하고, 나머지는 숨깁니다.
+        myPageReviewBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'none';
+            myPageReview.style.display = 'block';
+            myPageSave.style.display = 'none';
+        });
+
+        // myPageSaveBtn을 클릭하면 myPageSave를 보이게 하고, 나머지는 숨깁니다.
+        myPageSaveBtn.addEventListener('click', function () {
+            myPageInfo.style.display = 'none';
+            myPageReview.style.display = 'none';
+            myPageSave.style.display = 'block';
+        });
+    }
+</script>
+
+<script th:inline="javascript">
+    function validateNickname() {
+        var nickname = $("#nickname").val();
+        var on = $("#originNickname").val();
+        var provider = $("#originProvider").val();
+        var name = $("#name").text();
+        var val = false;
+        var pt = prompt("새 닉네임을 입력해 주세요.");
+        if (pt != null) {
+            var nicknameRegex = /^[가-힣a-zA-Z]{2,}$/;
+            var cn = pt;
+            if (nicknameRegex.test(cn)) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/member/validateNickname',
+                    data: {
+                        nickname: cn
+                    },
+                    success: function (data) {
+                        var result = data.result;
+                        if (result === "success") {
+                            $("#hiddenNickname").val(cn);
+                            alert("사용 가능한 닉네임 입니다.")
+                            $('#myPageRead').prop('disabled', false);
+                            document.getElementById('nickname').value = cn;
+                            $("#nickname_view").text(cn);
+                        } else {
+                            alert("이미 존재하는 닉네임 입니다.")
+                            $('#myPageRead').prop('disabled', true);
+                            $("#nickname").focus()
+                        }
+                    },
+                    error: function (error) {
+                        alert("전송 실패")
+                    }
+                })
+            } else {
+                alert("닉네임은 두 글자 이상 입력해주세요.");
+            }
+
+        }
+    }
+
+    function searchAddress() {
+        var postcodePopup = new daum.Postcode({
+            oncomplete: function (data) {
+                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+                // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+                var roadAddr = data.roadAddress; // 도로명 주소 변수
+                var extraRoadAddr = ''; // 참고 항목 변수
+
+                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                    extraRoadAddr += data.bname;
+                }
+                // 건물명이 있고, 공동주택일 경우 추가한다.
+                if (data.buildingName !== '' && data.apartment === 'Y') {
+                    extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                if (extraRoadAddr !== '') {
+                    extraRoadAddr = ' (' + extraRoadAddr + ')';
+                }
+
+                // 우편번호와 주소 정보를 해당 필드에 넣는다.
+                document.getElementById("addr1").value = roadAddr;
+                setTimeout(function () {
+                    postcodePopup.close();
+                }, 0);
+            }
+        });
+        postcodePopup.open();
+
+    }
+
+    function goBack() {
+        history.go(-1);
+    }
+
+    document.getElementById('phone2').addEventListener('click', function () {
+       document.getElementById('phone2').textContent = "";
+    });
+
+    document.getElementById('myPageChange').addEventListener('click', function () {
+        // Change가 붙은 요소들을 block으로 설정
+        document.getElementById('memberSexChange').style.display = 'block';
+        document.getElementById('memberBirthChange').style.display = 'block';
+        document.getElementById('memberPhoneChange').style.display = 'block';
+        document.getElementById('memberAddr1Change').style.display = 'block';
+        document.getElementById('memberAddr2Change').style.display = 'block';
+        document.getElementById('memberNickNameChange').style.display = 'block';
+        document.getElementById('myPageRead').style.display = 'block';
+        document.getElementById('myPagePictureUploadInput').style.display = 'block';
+
+        // Read가 붙은 요소들을 none으로 설정
+        document.getElementById('memberSexRead').style.display = 'none';
+        document.getElementById('memberBirthRead').style.display = 'none';
+        document.getElementById('memberPhoneRead').style.display = 'none';
+        document.getElementById('memberAddr1Read').style.display = 'none';
+        document.getElementById('memberAddr2Read').style.display = 'none';
+        document.getElementById('memberNickNameRead').style.display = 'none';
+        document.getElementById('myPageChange').style.display = 'none';
+    });
+
+    document.getElementById('myPageRead').addEventListener('click', function () {
+        var nickname = $("#nickname").val();
+        var birth = $("#birth").val();
+        var phone = $("#phone").val();
+        var phone2 = $("#phone2").val();
+        var addr1 = $("#addr1").val();
+        var addr2 = $("#addr2").val();
+        var img = $("#backURL").val();
+        const phonePattern = /^(\d{7,8})$/;
+        const nicknamePattern = /^.{2,}$/;
+
+        var formData = new FormData();
+        formData.append('nickname', nickname);
+        formData.append('birth', birth);
+        formData.append('phone', phone);
+        formData.append('phone2', phone2);
+        formData.append('addr1', addr1);
+        formData.append('addr2', addr2);
+        var fileInput = $('#myPagePictureUploadInput')[0];
+        if (fileInput.files.length > 0) {
+            formData.append('file', fileInput.files[0]);
+        }
+
+        const getValue = () => {
+            let curr_value;
+            const radioValue = document.getElementsByName("sex");
+            radioValue.forEach((radio) => {
+                if (radio.checked) {
+                    curr_value = radio.defaultValue;
+                }
+            });
+            return curr_value;
+        };
+
+        formData.append('img', img);
+        formData.append('sex', getValue());
+
+
+        if (nicknamePattern.test(nickname) !== true) {
+            alert("사이트에서 사용할 닉네임을 입력해주세요!");
+            $("#nickname").focus()
+        } else if (nickname != $("#originNickname").val() && nickname != $("#hiddenNickname").val()) {
+            alert("닉네임 중복확인을 진행해주세요!");
+            $("#nickname").focus();
+        } else if (birth == "" || birth == "n") {
+            alert("생일을 입력해주세요!");
+            $("#birth").focus()
+        } else if (phone == "" || phone == "n") {
+            alert("전화번호를 입력해주세요!");
+            $("#phone").focus()
+        } else if (phonePattern.test(phone2) !== true) {
+            alert("전화번호를 입력해주세요!");
+            $("#phone2").focus()
+        } else if (addr1 == "" || addr1 == "n") {
+            alert("도로명주소를 입력해주세요!");
+            $("#addr1").focus()
+        } else {
+            $.ajax({
+                url: "/member/mypage/edit/detail",
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    document.getElementById('memberAddr2Read').textContent = response.addr2;
+                    document.getElementById('memberSexRead').textContent = response.sex;
+                    document.getElementById('memberAddr1Read').textContent = response.addr1;
+                    document.getElementById('memberNickNameRead').textContent = response.nickname;
+                    document.getElementById('memberPhoneRead').textContent = response.phone + response.phone2;
+                    document.getElementById('memberBirthRead').textContent = response.birth;
+                    document.getElementById('profileImg').style.backgroundImage = img;
+
+                    // Change가 붙은 요소들을 block으로 설정
+                    document.getElementById('memberSexChange').style.display = 'none';
+                    document.getElementById('memberBirthChange').style.display = 'none';
+                    document.getElementById('memberPhoneChange').style.display = 'none';
+                    document.getElementById('memberAddr1Change').style.display = 'none';
+                    document.getElementById('memberAddr2Change').style.display = 'none';
+                    document.getElementById('memberNickNameChange').style.display = 'none';
+                    document.getElementById('myPageRead').style.display = 'none';
+                    document.getElementById('myPageProPicture').style.display = 'none';
+
+                    // Read가 붙은 요소들을 none으로 설정
+                    document.getElementById('memberSexRead').style.display = 'block';
+                    document.getElementById('memberBirthRead').style.display = 'block';
+                    document.getElementById('memberPhoneRead').style.display = 'block';
+                    document.getElementById('memberAddr1Read').style.display = 'block';
+                    document.getElementById('memberAddr2Read').style.display = 'block';
+                    document.getElementById('memberNickNameRead').style.display = 'block';
+                    document.getElementById('myPageChange').style.display = 'block';
+                    alert("수정완료");
+                    location.href = "/main";
+                },
+                error: function (error) {
+                    alert("데이터 전송 실패");
+                    console.log("error:" + error);
+                }
+            })
+        }
+    });
+
+    document.getElementById('myPagePictureUploadInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    var reader = new FileReader();
+
+    reader.onloadend = function() {
+        document.getElementById('profileImg').style.backgroundImage = 'url("' + reader.result + '")';
+        $("#backURL").val('url("' + reader.result + '")');
+    }
+
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
+        document.getElementById('profileImg').style.backgroundImage = '';
+    }
+    });
+
+    document.getElementById('correctionImg').addEventListener('click', function () {
+        document.getElementById('myPagePictureUploadInput').click();
+    });
+</script>
+
+<div id="bg"></div>
+</body>
+</html>

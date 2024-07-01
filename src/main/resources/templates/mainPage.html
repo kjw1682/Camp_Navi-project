@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/mainBG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<body id="mainPageBtnzBody">
+
+<th:block th:insert="insert/header.html"></th:block>
+
+<div id="mainPageBtnz">
+    <div class="mainMyPageBox">
+        <img alt="마이페이지" class="mainPageBtn" id="myPage" src="/assets/images/button/glass.png">
+        <div class="mainBoxText" id="mainText">마이페이지</div>
+    </div>
+    <div id="mainSearchBox">
+        <img alt="캠핑장 추천" class="mainPageBtn" id="mainSearch" src="/assets/images/button/compass.png">
+        <div class="mainBoxText" id="searchText">캠핑장 추천</div>
+    </div>
+    <div id="mainChatBox">
+        <img alt="채팅방가기" class="mainPageBtn" id="chat" src="/assets/images/button/cellphone.png">
+        <div class="mainBoxText" id="chatText">채팅방가기</div>
+    </div>
+    <div id="mainProductBox">
+        <img alt="용품추천" class="mainPageBtn" id="product" src="/assets/images/button/hammer.png">
+        <div class="mainBoxText" id="productText">캠핑용품 추천</div>
+    </div>
+    <div id="mainAdminBox">
+        <img alt="캠핑장 후기" class="mainPageBtn" id="book" src="/assets/images/button/book.png">
+        <div class="mainBoxText" id="bookText">캠핑장 후기</div>
+    </div>
+</div>
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+
+<script>
+
+    /*텍스트 box 표시 및 마우스 따라다니도록 만드는 코드*/
+    var buttons = document.getElementsByClassName('mainPageBtn');
+
+    var texts = {
+        'myPage': document.getElementById('mainText'),
+        'mainSearch': document.getElementById('searchText'),
+        'chat': document.getElementById('chatText'),
+        'product': document.getElementById('productText'),
+        'book': document.getElementById('bookText')
+    };
+
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener('mouseover', function (e) {
+            var id = e.target.id;
+            var text = texts[id];
+            if (text) {
+                text.style.display = 'block';
+                text.style.left = e.pageX + 'px';
+                text.style.top = e.pageY + 'px';
+            }
+        });
+        buttons[i].addEventListener('mouseout', function (e) {
+            var id = e.target.id;
+            var text = texts[id];
+            if (text) {
+                text.style.display = 'none';
+            }
+        });
+    }
+
+    /*링크 연결*/
+    document.getElementById('mainSearch').addEventListener('click', function () {
+        location.href = '/loading';
+    });
+
+    document.getElementById('chat').addEventListener('click', function () {
+        location.href = '/chat/room';
+    });
+
+    document.getElementById('product').addEventListener('click', function () {
+        location.href = '/camp/essentials';
+    });
+
+    document.getElementById('book').addEventListener('click', function () {
+        location.href = '/review/list';
+    });
+
+    document.getElementById('myPage').addEventListener('click', function () {
+        location.href = '/member/mypage';
+    });
+
+
+</script>
+<!--배경사진-->
+<div id="bg"></div>
+
+</body>
+</html>

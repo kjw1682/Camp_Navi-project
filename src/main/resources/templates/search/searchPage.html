@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>Search</title>
+</head>
+<style>
+    th {
+        height: 25px;
+    }
+
+    td {
+        height: 25px;
+        text-align: center;
+    }
+
+</style>
+<body>
+
+<th:block th:insert="insert/header.html"></th:block>
+
+<div id="search-area">
+    <div id="search-box">
+        <h1 class="major">검색</h1>
+        <div id="searchContain">
+            <select id="searchField" name="searchField">
+                <th:block th:each="field : ${campRecommendVo.searchFieldArray}">
+                    <option selected th:if="${field[0] == campRecommendVo.searchField}" th:value="${field[0]}">
+                        [[${field[1]}]]
+                    </option>
+                    <option th:unless="${field[0] == campRecommendVo.searchField}" th:value="${field[0]}">
+                        [[${field[1]}]]
+                    </option>
+                </th:block>
+            </select>
+            <input id="searchBar" name="searchWord" placeholder="검색어를 입력하세요" spellcheck="false"
+                   th:value="${campRecommendVo.searchWord}"
+                   type="text">
+            <button class="mainBtn" id="searchBtn" onclick="camp_search(); return false;" type="button">검색</button>
+        </div>
+        <div id="searchRequirement">
+            <input checked class="search-checked" id="camping" name="campType" type="checkbox" value="generalCamping">
+            <label class="search-icon-area" for="camping" title="일반캠핑장"><img class="search-icon"
+                                                                             src="/assets/images/icon/camping.png"></label>
+            <input checked class="search-checked" id="glamping" name="campType" type="checkbox" value="glamping">
+            <label class="search-icon-area" for="glamping" title="글램핑"><img class="search-icon"
+                                                                            src="/assets/images/icon/glamping.png"></label>
+            <input checked class="search-checked" id="caravan" name="campType" type="checkbox" value="caravan">
+            <label class="search-icon-area" for="caravan" title="카라반"><img class="search-icon"
+                                                                           src="/assets/images/icon/caravan.png"></label>
+            <input checked class="search-checked" id="car" name="campType" type="checkbox" value="autoCamping">
+            <label class="search-icon-area" for="car" title="자동차야영장"><img class="search-icon"
+                                                                          src="/assets/images/icon/car.png"></label>
+        </div>
+        <div id="search-list_area"></div>
+        <div class="page-box" id="search-page_area"></div>
+    </div>
+    <div class="box" id="contentSearchArea">
+        <h2>캠핑장 추천</h2>
+        <div id="kakaoMap"></div>
+        <button class="mainBtn" id="search-box-toggle">검색하기</button>
+    </div>
+</div>
+
+<th:block th:insert="insert/footer.html"></th:block>
+
+<script>
+    document.getElementById('search-box-toggle').addEventListener('click', function () {
+        let searchBox = document.getElementById('search-box');
+        let contentSearchArea = document.getElementById('contentSearchArea')
+        if (searchBox.style.display === 'none') {
+            searchBox.style.display = 'block';
+            contentSearchArea.style.marginRight = '10rem';
+        } else {
+            searchBox.style.display = 'none';
+            contentSearchArea.style.marginRight = 'auto';
+        }
+    });
+
+    document.getElementById('searchExit').addEventListener('click', function () {
+        document.getElementById('search-box').style.display = 'none';
+    });
+</script>
+
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=0f99991591de7a581b0817b2c20056f0" type="text/javascript"></script>
+
+<script type="text/javascript">
+    let map = null;
+    let markers = null;
+    let list = null;
+    let infowindow_always = null;
+    let choice = 0;
+
+    // 선택한 마커 이미지 정보
+    let imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+    let imageSize = new kakao.maps.Size(24, 35);
+    let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+
+    $(document).ready(function () {
+        reloadList(1, "score", "DESC", true);
+    });
+
+    function reloadList(page, sortBy, sortDirection, mapRefresh) {
+        $.ajax({
+            type: 'POST',
+            url: '/camp/reloadList',
+            data: {
+                page: page,
+                sortBy: sortBy,
+                sortDirection: sortDirection
+            },
+            success: function (data) {
+                let list = data.campRecommendList;
+                let totalPages = data.totalPages;
+                let page = data.page;
+                let size = data.size;
+                let pageMaxDisplay = data.pageMaxDisplay;
+                let pageWidth = parseInt(pageMaxDisplay/2);
+                let result = data.result;
+                if (result === "success") {
+                    if (mapRefresh) {
+                        reloadMap();
+                    }
+                    let HTML = "";
+                    HTML += "<table id=\"searchList\"><tr>";
+                    HTML += "<th style='width:50%; text-align:center; font-size:1.1rem;'>이름</th>";
+                    HTML += "<th style='width:30%; text-align:center; font-size:1.1rem;'>지역</th>";
+                    HTML += "<th style='width:20%; text-align:center; font-size:1.1rem;'>추천점수</th>"
+
+                    /*
+                    if (sortBy == "name" && sortDirection == 'ASC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'DESC', true); return false;\">△이름△</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'ASC', true); return false;\">지역</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'DESC', true); return false;\">추천점수</a></th></tr>";
+                    } else if (sortBy == "name" && sortDirection == 'DESC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'ASC', true); return false;\">▽이름▽</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'ASC', true); return false;\">지역</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'DESC', true); return false;\">추천점수</a></th></tr>";
+                    } else if (sortBy == "addr" && sortDirection == 'ASC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'ASC', true); return false;\">이름</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'DESC', true); return false;\">△지역△</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'DESC', true); return false;\">추천점수</a></th></tr>";
+                    } else if (sortBy == "addr" && sortDirection == 'DESC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'ASC', true); return false;\">이름</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'ASC', true); return false;\">▽지역▽</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'DESC', true); return false;\">추천점수</a></th></tr>";
+                    } else if (sortBy == "score" && sortDirection == 'ASC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'ASC', true); return false;\">이름</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'ASC', true); return false;\">지역</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'DESC', true); return false;\">△추천점수△</a></th></tr>";
+                    } else if (sortBy == "score" && sortDirection == 'DESC') {
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'name', 'ASC', true); return false;\">이름</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'addr', 'ASC', true); return false;\">지역</a></th>";
+                        HTML += "<th><a href=\"\" onclick=\"reloadList(1, 'score', 'ASC', true); return false;\">▽추천점수▽</a></th></tr>";
+                    }
+                    */
+
+                    for (let i = (page - 1) * size; i < (page * size < list.length ? page * size : list.length); i++) {
+                        HTML += "<tr class=\"tableResult\">";
+                        let tmp_name = list[i].camp.name;
+                        let name_length_limit = 16;
+                        if (tmp_name.length >= name_length_limit) {
+                            tmp_name = tmp_name.substring(0, name_length_limit-1) + "...";
+                        }
+                        HTML += "<td><a href=\"\" onclick=\"move_map(" + i + ", " + list[i].camp.mapX + ", " + list[i].camp.mapY + ")\; return false\;\" title=\"" + list[i].camp.name + "\">" + tmp_name + "</a></td>";
+                        HTML += "<td>" + list[i].addressShort + "</td>";
+
+                        let starScore = parseFloat(list[i].scoreView);
+
+                        HTML += "<td><span class=\"satisfaction\" title=\"" + starScore + "\" alt=\"" + starScore + "\">";
+                        if (starScore < 0.5) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-empty.png\">";
+                        } else if (starScore < 1.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-half.png\">";
+                        } else if (starScore >= 1.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-full.png\">";
+                        }
+
+                        if (starScore < 1.5) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-empty.png\">";
+                        } else if (starScore < 2.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-half.png\">";
+                        } else if (starScore >= 2.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-full.png\">";
+                        }
+
+                        if (starScore < 2.5) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-empty.png\">";
+                        } else if (starScore < 3.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-half.png\">";
+                        } else if (starScore >= 3.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-full.png\">";
+                        }
+
+                        if (starScore < 3.5) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-empty.png\">";
+                        } else if (starScore < 4.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-half.png\">";
+                        } else if (starScore >= 4.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-full.png\">";
+                        }
+
+                        if (starScore < 4.5) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-empty.png\">";
+                        } else if (starScore < 5.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-half.png\">";
+                        } else if (starScore >= 5.0) {
+                            HTML += "<img class=\"search-star\" src=\"/assets/images/icon/star-full.png\">";
+                        }
+                        HTML += "</span></td></tr>";
+                    }
+                    HTML += "</table>";
+                    $("#search-list_area").html(HTML);
+
+
+                    // 페이지 번호 요소를 동적으로 생성합니다.
+                    let pageHTML = "";
+                    if (page == 1) {
+                        pageHTML += "<img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowL.png\">";
+                    } else {
+                        pageHTML += "<a href=\"\" onclick=\"reloadList(" + (page - 1) + ", 'score', 'DESC', false); return false;\"><img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowL.png\"></a>";
+                    }
+
+                    let start = page - pageWidth;
+                    let end = page + pageWidth;
+                    if (start < 1) {
+                        start = 1;
+                        end = Math.min(start + pageWidth*2, totalPages);
+                    }
+                    if (end > totalPages) {
+                        end = totalPages;
+                        start = Math.max(end - pageWidth*2, 1);
+                    }
+                    for (let i = start; i <= end; i++) {
+                        if (i == page) {
+                            pageHTML += "<span class=\"page-num active\">" + i + "</span>";
+                        } else {
+                            pageHTML += "<a href=\"\" class=\"page-num\">" + i + "</a>";
+                        }
+                    }
+                    if (page == totalPages) {
+                        pageHTML += "<img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowR.png\">";
+                    } else {
+                        pageHTML += "<a href=\"\" onclick=\"reloadList(" + (page + 1) + ", 'score', 'DESC', false); return false;\"><img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowR.png\"></a>";
+                    }
+                    document.getElementById('search-page_area').innerHTML = pageHTML;
+
+                    // 페이지 번호를 클릭하면 해당 페이지의 내용을 불러오는 함수
+                    function handlePageClick(event) {
+                        const pageNumber = parseInt(event.target.textContent);
+                        reloadList(pageNumber, 'score', 'DESC', false);
+                        event.preventDefault();
+                    }
+
+                    // 페이지 번호 요소들을 가져옵니다.
+                    const pageNumElements = document.querySelectorAll('.page-num');
+
+                    // 각 페이지 번호 요소에 클릭 이벤트 리스너를 추가합니다.
+                    pageNumElements.forEach((pageNumElement) => {
+                        pageNumElement.addEventListener('click', handlePageClick);
+                    });
+                }
+            },
+            error: function () {
+                alert("리스트 갱신 실패!");
+            }
+        });
+    }
+
+    function camp_search() {
+        let searchField = $("#searchField").val();
+        let searchWord = $("#searchBar").val();
+
+        // 체크박스 배열 가져오기
+        let campType = [];
+        $("input[name='campType']:checked").each(function () {
+            campType.push($(this).val());
+        });
+
+        if (campType.length == 0) {
+            alert("캠핑장 유형을 하나 이상 선택해야 합니다.");
+            return false;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/camp/re_search',
+            dataType: 'json',
+            data: {
+                searchField: searchField,
+                searchWord: searchWord,
+                campType: campType
+            },
+            success: function (data) {
+                let page = 1;
+                let sortBy = data.campRecommendVo.sortBy;
+                let sortDirection = data.campRecommendVo.sortDirection;
+                reloadList(page, sortBy, sortDirection, true);
+            },
+            error: function () {
+                alert("검색 실패");
+            }
+        });
+    }
+
+    let searchBox = document.getElementById('searchBar');
+    searchBox.addEventListener('keyup', event => press_enter_in_searchBox(event));
+
+    function press_enter_in_searchBox(event) {
+        let key = event.key || event.keyCode;
+        if (key === 'Enter' || key === 13) {
+            camp_search();
+            event.preventDefault();
+        }
+    }
+
+
+    function reloadMap() {
+        $.ajax({
+            type: 'POST',
+            url: '/camp/reloadMap',
+            success: function (data) {
+                markers = [];
+                choice = 0;
+                list = data.campRecommendVo.campRecommendList;
+                if (list.length > 0) {
+                    // 지도 생성
+                    let initX = list[0].camp.mapX;
+                    let initY = list[0].camp.mapY;
+                    let mapContainer = document.getElementById('kakaoMap'); // 지도를 표시할 div
+                    let mapOption = {
+                        center: new kakao.maps.LatLng(initY, initX), // 지도의 중심좌표
+                        level: 5 // 지도의 확대 레벨
+                    };
+                    map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+                    // 마커 위치 설정
+                    let positions = []
+                    for (let i = 0; i < list.length; i++) {
+                        let x = list[i].camp.mapX;
+                        let y = list[i].camp.mapY;
+                        let name = list[i].camp.name;
+                        positions.push({title: name, latlng: new kakao.maps.LatLng(y, x), rating: list[i].scoreView});
+                    }
+
+                    // 마커 출력
+                    for (let i = 0; i < positions.length; i++) {
+
+                        // 마커를 생성합니다
+                        let marker = null;
+                        if (i == choice) {
+                            marker = new kakao.maps.Marker({
+                                map: map, // 마커를 표시할 지도
+                                position: positions[i].latlng, // 마커를 표시할 위치
+                                image: markerImage // 마커 이미지
+                            });
+                        } else {
+                            marker = new kakao.maps.Marker({
+                                map: map, // 마커를 표시할 지도
+                                position: positions[i].latlng, // 마커를 표시할 위치
+                            });
+                        }
+                        markers.push(marker);
+
+                        kakao.maps.event.addListener(marker, 'click', function () {
+                            location.href = "/search/loading/" + list[i].camp.cseq;
+                        });
+
+                        // 마커에 표시할 인포윈도우를 생성합니다
+                        let infowindow = new kakao.maps.InfoWindow({
+                            // 인포윈도우에 표시할 내용
+                            content: "<div style=\"padding:5px; font-weight:bold; white-space:nowrap;\">" + list[i].camp.name + " (★ : " + list[i].scoreView + ")</div>"
+                        });
+
+                        if (i != choice) {
+                            kakao.maps.event.addListener(marker, 'mouseover', makeOverListener(map, marker, infowindow));
+                            kakao.maps.event.addListener(marker, 'mouseout', makeOutListener(infowindow));
+                        }
+
+                        if (i == list.length - 1) {
+                            infowindow_always = new kakao.maps.InfoWindow({
+                                // 인포윈도우에 표시할 내용
+                                content: "<div style=\"padding:5px; font-weight:bold; white-space:nowrap;\">" + list[choice].camp.name + " (★ : " + list[choice].scoreView + ")</div>"
+                            });
+                            infowindow_always.open(map, markers[choice]);
+                        }
+
+
+                    }
+                }
+            },
+            error: function () {
+                alert("지도 갱신 실패!");
+            }
+        });
+    }
+
+    // 인포윈도우를 표시하는 클로저를 만드는 함수입니다
+    function makeOverListener(map, marker, infowindow) {
+        return function () {
+            infowindow.open(map, marker);
+        };
+    }
+
+    // 인포윈도우를 닫는 클로저를 만드는 함수입니다
+    function makeOutListener(infowindow) {
+        return function () {
+            infowindow.close();
+        };
+    }
+
+    function move_map(index, mapX, mapY) {
+        markers[choice].setImage(null);
+        markers[index].setImage(markerImage);
+        infowindow_always.close();
+
+        infowindow = new kakao.maps.InfoWindow({
+            // 인포윈도우에 표시할 내용
+            content: "<div style=\"padding:5px; font-weight:bold; white-space:nowrap;\">" + list[choice].camp.name + " (★ : " + list[choice].scoreView + ")</div>"
+        });
+
+        kakao.maps.event.addListener(markers[choice], 'mouseover', makeOverListener(map, markers[choice], infowindow));
+        kakao.maps.event.addListener(markers[choice], 'mouseout', makeOutListener(infowindow));
+
+        // 마커에 표시할 인포윈도우를 생성합니다
+        infowindow_always = new kakao.maps.InfoWindow({
+            // 인포윈도우에 표시할 내용
+            content: "<div style=\"padding:5px; font-weight:bold; white-space:nowrap;\">" + list[index].camp.name + " (★ : " + list[index].scoreView + ")</div>"
+        });
+        infowindow_always.open(map, markers[index]);
+
+        kakao.maps.event.addListener(markers[index], 'mouseover', null);
+        kakao.maps.event.addListener(markers[index], 'mouseout', null);
+
+        choice = index;
+        let moveLatLon = new kakao.maps.LatLng(mapY, mapX);
+        map.panTo(moveLatLon);
+
+
+    }
+
+    // 모든 'search-checked' 클래스를 가진 체크박스를 선택합니다.
+    let checkboxes = document.querySelectorAll('.search-checked');
+
+    // 각 체크박스에 대해 이벤트 리스너를 추가합니다.
+    checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('click', function () {
+            // 체크박스의 'id'를 가져와서 이를 사용하여 연결된 레이블을 선택합니다.
+            let label = document.querySelector('label[for="' + checkbox.id + '"]');
+
+            // 레이블 내부의 'search-icon' 클래스를 가진 이미지를 선택합니다.
+            let icon = label.querySelector('.search-icon');
+
+            // 이미지의 스타일을 확인하고, 이미지의 스타일을 변경합니다.
+            if (checkbox.checked) {
+                icon.style.filter = 'invert(100%)';
+            } else {
+                icon.style.filter = 'invert(0%)';
+            }
+        });
+    });
+</script>
+</body>
+</html>

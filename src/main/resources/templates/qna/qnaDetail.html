@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet" th:if="${member.role == 'ROLE_USER'}"/>
+    <link href="/assets/css/bg/adminBG.css" rel="stylesheet" th:unless="${member.role == 'ROLE_USER'}"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<article class="box centerBox" id="review-detail-box">
+    <div class="container">
+        <h2 class="mb-4" th:text="${qna.type == 'FAQ' ? 'FAQ' : '1:1 문의'}"></h2>
+        <hr class="vertical">
+        <div class="card webkit">
+            <div class="card-header">
+                <h3 th:text="${qna.title}">제목</h3>
+            </div>
+            <hr>
+            <div class="card-body">
+                <div class="info">
+                    <div class="space-between">
+                        <div class="space-between-flex">
+                            <span th:text="'작성자 : '+${qna.member.name}">작성자명</span>
+
+                        </div>
+                        <div class="space-between-flex">
+                            <span th:text="'작성일시 : '+${#dates.format(qna.createdAt, 'yyyy-MM-dd HH:mm:ss')}">날짜시간</span>
+                        </div>
+                        <div class="space-between-flex" th:if="${isAdmin}">
+                            <span th:text="'삭제 여부 : '+${qna.useyn == 'y' ? 'X' : 'O'}">날짜시간</span>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <div id="img-area">
+                    <img id="img" class="campAreaImg" th:src="@{/assets/qnaImages/} + ${qna.image}">
+                    <input type="hidden" th:value="${qna.image != null ? 'y' : 'n'}" id="imgCheck">
+                    <input type="hidden" th:value="${qna.useyn}" id="useyn">
+                    <hr>
+                </div>
+
+
+                <p class="content" id="content" th:text="${qna.content}"></p>
+
+
+                <hr>
+                <div class="buttonContain button-full">
+                    <!-- 작성자만 수정 및 삭제 버튼을 볼 수 있도록 -->
+                    <a class="webkit"
+                       th:href="@{/qna/detail/edit/} + ${qna.qseq}" th:if="${qna.member.mseq == member.mseq || member.role == 'ROLE_ADMIN' || member.role == 'ROLE_SUPERVISOR'}" id="editBtn">
+                        <button class="webkit" >수정하기</button>
+                    </a>
+                    <!-- 목록으로 돌아가기 -->
+                    <a class="webkit">
+                    <button class="webkit" id="back-btn">목록보기</button>
+                    </a>
+                    <a id="delete-btn" class="webkit"
+                          th:href="@{/qna/detail/delete/} + ${qna.qseq}" th:if="${member.mseq == qna.member.mseq}">
+                        <button class="webkit mainBtn" type="button">삭제하기</button>
+                    </a>
+                    <a id="restore-btn" class="webkit"
+                       th:href="@{/qna/detail/restore/} + ${qna.qseq}" th:if="${member.role != 'ROLE_USER' && qna.type != 'ONE'}">
+                        <button class="webkit mainBtn" type="button">복구하기</button>
+                    </a>
+                    <a class="webkit"
+                       th:href="@{/qna/reply/write/} + ${qna.qseq}" th:if="${member.role != 'ROLE_USER' && qna.type != 'FAQ'}" id="replyBtn">
+                        <button class="webkit mainBtn" type="button">답변하기</button>
+                    </a>
+                </div>
+                <hr>
+            </div>
+            <div id="reply-area"></div>
+            <div class="page-box">
+                <img class="icon width-rem1" id="prevBtn" src="/assets/images/icon/arrowL.png">
+                <div id="pagination" class="page-numbers"></div>
+                <img class="icon width-rem1" id="nextBtn" src="/assets/images/icon/arrowR.png">
+            </div>
+            <hr>
+        </div>
+    </div>
+
+</article>
+<input type="hidden" id="userRole" th:value="${member.role}">
+<input type="hidden" id="mseq" th:value="${member.mseq}">
+<input type="hidden" id="qseq" th:value="${qna.qseq}">
+<input type="hidden" id="type" th:value="${qna.type}">
+<input type="hidden" id="qnaMember" th:value="${qna.member.mseq}">
+<script>
+
+    document.getElementById('back-btn').addEventListener('click', function () {
+        var type = $("#type").val();
+        var userRole = $("#userRole").val();
+        if (type === 'FAQ' && userRole !== 'ROLE_USER') {
+            location.href = '/admin/faq/list';
+        } else if (userRole === 'ROLE_USER') {
+            location.href = '/qna/home';
+        } else if (type !== 'FAQ' && userRole !== 'ROLE_USER') {
+            location.href = '/admin/qna/list';
+        }
+    })
+
+    $(document).ready(function () {
+        let userRole = $("#userRole").val();
+        let qnaMember = $("#qnaMember").val();
+        let mseq = $("#mseq").val();
+        let useyn = $("#useyn").val();
+        if (qnaMember != mseq && userRole == "ROLE_USER") {
+            document.getElementById('replyBtn').style.display = 'none';
+            document.getElementById('reply-area').style.display = 'none';
+        }
+
+        if(qnaMember != mseq) {
+            document.getElementById('editBtn').style.display = 'none';
+        }
+
+        if(useyn == 'y') {
+            document.getElementById('delete-btn').style.display = 'inline-block';
+            document.getElementById('restore-btn').style.display = 'none';
+        } else if(useyn == 'n') {
+            document.getElementById('delete-btn').style.display = 'none';
+            document.getElementById('restore-btn').style.display = 'inline-block';
+        }
+    })
+
+    var userRole = $("#userRole").val();
+    if (userRole != "ROLE_USER") {
+        $("#replyBtn").show();
+    } else {
+        $("#replyBtn").hide();
+    }
+
+    $(document).ready(function () {
+        var isImg = $("#imgCheck").val();
+        if (isImg == 'y') {
+            $("#img-area").show();
+            $("#img").show();
+        } else {
+            $("#img-area").hide();
+            $("#img").hide();
+        }
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        if ($("#type").val() !== "FAQ") {
+            function replyList(page) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/qna/reply/paging',
+                    data: {
+                        page : page,
+                        size : 3,
+                        sort : 'createdAt,desc',
+                        qseq : $("#qseq").val()
+                    },
+                    success: function (data) {
+                        var replyArea = $("#reply-area");
+                        replyArea.empty();
+                        var replys = data.list.content;
+                        let isAdmin = data.isAdmin;
+                        var index = 1;
+                        let HTML = '';
+                        HTML += '<table>';
+                        HTML += '<tr>';
+                        HTML += '<th>번호</th>';
+                        HTML += '<th>내용</th>';
+                        HTML += '<th>작성일자</th>';
+                        HTML += '<th>작성자</th>';
+                        if (isAdmin) {
+                            HTML += '<th colspan="2">관리</th>';
+                        }
+                        HTML += '</tr>';
+                        replys.forEach(function (reply, index) {
+                            HTML += '<tr>';
+                            HTML += '<td>' + (index+1) + '</td>';
+                            HTML += '<td><span>' + reply.content + '</span></td>';
+                            var formattedDate = moment(reply.createdAt).format('YYYY-MM-DD HH:mm:ss');
+                            HTML += '<td>' + formattedDate + '</td>';
+                            HTML += '<td>' + reply.member.name + '</td>';
+                            if (isAdmin) {
+                                HTML += '<td><button id="reply-edit" type="button" onclick="editReply()">수정하기</button> </td>';
+                                HTML += '<td><button id="reply-delete" type="button" onclick="deleteReply()">삭제하기</td>';
+                            }
+                            HTML += '</tr>';
+                            if (reply.img != null) {
+                                HTML += '<tr><td><img src="/assets/replyImages/' + reply.img + '"></td></tr>';
+                            }
+                            HTML += '<input type="hidden" id="reply_id" value="' + reply.reply_id + '"/>';
+                        });
+                        HTML += '</table>';
+                        replyArea.append(HTML);
+
+                        var pagination = $("#pagination");
+                        pagination.empty();
+                        var totalPages = data.page.totalPages;
+                        $("#hiddenTotal").val(totalPages);
+                        var visiblePages = 5;
+                        var startPage = Math.max(0, Math.min(page - Math.floor(visiblePages / 2), totalPages - visiblePages));
+                        var endPage = Math.min(totalPages, startPage + visiblePages);
+
+                        for (var i = startPage; i < endPage; i++) {
+                            pagination.append('<button class="page-btn" id="page" data-page="' + i + '">' + (i + 1) + '</button>');
+                        }
+
+                        currentPage = page;
+                    }
+                });
+            }
+            $(document).on('click', '#page', function () {
+                var page = $(this).data('page');
+                replyList(page);
+            });
+
+            $('#prevBtn').click(function () {
+                if (currentPage > 0) {
+                    replyList(currentPage - 1);
+                }
+            });
+
+            $('#nextBtn').click(function () {
+                if (currentPage < $('#hiddenTotal').val() -1) {
+                    replyList(currentPage + 1);
+                }
+            });
+
+            replyList(0);
+        } else {
+            document.getElementById('prevBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+    });
+</script>
+<script>
+    function editReply() {
+        if ($("#userRole").val() != "ROLE_SUPERVISOR") {
+            alert("권한이 없습니다.");
+        } else {
+            var reply_id = $("#reply_id").val();
+            location.href = "/qna/reply/edit/" + reply_id;
+        }
+    }
+
+    function deleteReply() {
+        if ($("#userRole").val() != "ROLE_SUPERVISOR") {
+            alert("권한이 없습니다.");
+        } else {
+            var reply_id = $("#reply_id").val();
+            location.href = "/qna/reply/delete/" + reply_id;
+        }
+
+    }
+</script>
+<th:block th:insert="/insert/footer"></th:block>
+</body>
+</html>

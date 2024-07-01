@@ -1,0 +1,167 @@
+<div class="header" xmlns="http://www.w3.org/1999/html">
+    <div class="box" id="headerBox">
+
+        <div><img alt="logo" class="logo" src="/assets/images/logo/typo.png" onclick="goMain()"></div>
+
+        <div class="headerCategory" id="headerCampingBtn">Camping</div>
+        <div class="headerCategory" id="headerCommunityBtn">Community</div>
+
+        <div class="headerLog buttonContain">
+            <div class="headerBtn" id="user_nickname"></div>
+            <a href="/oauth-login/member/logoutProc"><div class="headerBtn" id="headerLogoutBtn">[Logout]</div></a>
+            <a href="/member/mypage"><div class="headerBtn" id="headerMyPageBtn">[MyPage]</div></a>
+        </div>
+
+    </div>
+
+    <div class="headerValBox box" id="headerCamping">
+        <ul class="headerName">
+            <a href="/camp/search"><li class="headerVal" id="campingVal1">캠핑장 추천</li></a>
+            <a href="/camp/essentials"><li class="headerVal" id="campingVal2">캠핑용품 추천</li></a>
+            <a href="/review/list"><li class="headerVal" id="campingVal3">캠핑장 후기</li></a>
+        </ul>
+    </div>
+    <div class="headerValBox box" id="headerCommunity">
+        <ul class="headerName">
+            <a href="/chat/room"><li class="headerVal" id="communityVal1">채팅방</li></a>
+            <a href="/qna/home"><li class="headerVal" id="communityVal2"> 고객센터</li></a>
+        </ul>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+
+    let headerCampingBtn = document.getElementById('headerCampingBtn');
+    let headerCamping = document.getElementById('headerCamping');
+    let headerCommunityBtn = document.getElementById('headerCommunityBtn');
+    let headerCommunity = document.getElementById('headerCommunity');
+
+    // 마우스가 headerCampingBtn 요소 위에 있을 때 headerCamping 요소를 표시합니다.
+    headerCampingBtn.addEventListener('mouseover', function () {
+        headerCamping.style.display = 'block';
+    });
+
+    // 마우스가 headerCampingBtn 요소 또는 headerCamping 요소에서 벗어났을 때 headerCamping 요소를 숨깁니다.
+    headerCampingBtn.addEventListener('mouseout', function () {
+        // setTimeout을 사용하여 마우스가 headerCamping 요소로 바로 이동하는 경우를 처리합니다.
+        setTimeout(function () {
+            if (!headerCamping.matches(':hover')) {
+                headerCamping.style.display = 'none';
+            }
+        }, 300); // 300ms 후에 함수를 실행합니다.
+    });
+
+    headerCamping.addEventListener('mouseleave', function () {
+        headerCamping.style.display = 'none';
+    });
+
+    // 마우스가 headerCommunityBtn 요소 위에 있을 때 headerCommunity 요소를 표시합니다.
+    headerCommunityBtn.addEventListener('mouseover', function () {
+        headerCommunity.style.display = 'block';
+    });
+
+    // 마우스가 headerCommunityBtn 요소 또는 headerCommunity 요소에서 벗어났을 때 headerCommunity 요소를 숨깁니다.
+    headerCommunityBtn.addEventListener('mouseout', function () {
+        // setTimeout을 사용하여 마우스가 headerCommunity 요소로 바로 이동하는 경우를 처리합니다.
+        setTimeout(function () {
+            if (!headerCommunity.matches(':hover')) {
+                headerCommunity.style.display = 'none';
+            }
+        }, 300); // 300ms 후에 함수를 실행합니다.
+    });
+
+    headerCommunity.addEventListener('mouseleave', function () {
+        headerCommunity.style.display = 'none';
+    });
+
+
+    window.addEventListener('load', function() {
+        let headerCampingBtn = document.getElementById('headerCampingBtn');
+        let headerCamping = document.getElementById('headerCamping');
+        let headerCommunityBtn = document.getElementById('headerCommunityBtn');
+        let headerCommunity = document.getElementById('headerCommunity');
+
+        // headerCampingBtn 요소의 너비를 계산합니다.
+        let campingBtnWidth = headerCampingBtn.offsetWidth;
+        // headerCommunityBtn 요소의 너비를 계산합니다.
+        let communityBtnWidth = headerCommunityBtn.offsetWidth;
+
+        // headerCamping 요소의 위치를 조정합니다.
+        headerCamping.style.left = '50%';
+        headerCamping.style.transform = 'translateX(-50%)';
+        // headerCommunity 요소의 위치를 조정합니다.
+        headerCommunity.style.left = '50%';
+        headerCommunity.style.transform = 'translateX(-50%)';
+
+        // headerCampingBtn 요소를 클릭했을 때 headerCamping 요소의 위치를 조정합니다.
+        headerCampingBtn.addEventListener('mouseover', function () {
+            // headerCamping 요소가 보이는 경우
+            if (headerCamping.style.display === 'block') {
+                // headerCamping 요소의 위치를 headerCampingBtn 요소의 중앙으로 조정합니다.
+                headerCamping.style.left = (headerCampingBtn.offsetLeft + campingBtnWidth / 2) + 'px';
+                headerCamping.style.transform = 'translateX(-50%)';
+            }
+        });
+
+        // headerCommunityBtn 요소를 클릭했을 때 headerCommunity 요소의 위치를 조정합니다.
+        headerCommunityBtn.addEventListener('mouseover', function () {
+            // headerCommunity 요소가 보이는 경우
+            if (headerCommunity.style.display === 'block') {
+                // headerCommunity 요소의 위치를 headerCommunityBtn 요소의 중앙으로 조정합니다.
+                // headerCamping 요소의 너비를 고려합니다.
+                let leftPosition = headerCommunityBtn.offsetLeft + communityBtnWidth / 2;
+                if (headerCamping.style.display === 'block') {
+                    leftPosition += headerCamping.offsetWidth / 2;
+                }
+                headerCommunity.style.left = leftPosition + 'px';
+                headerCommunity.style.transform = 'translateX(-50%)';
+            }
+        });
+
+        // 헤더에 회원의 닉네임을 출력
+        $.ajax({
+            type: "POST",
+            url: "/get_nickname",
+            success: function(data) {
+                let nickname = data.nickname;
+                $("#user_nickname").html(nickname + "님");
+            },
+            error: function() {
+                alert("닉네임 출력 실페");
+            }
+        });
+    });
+
+    window.addEventListener('mousemove', function (e) {
+        let header = document.querySelector('.header');
+        // 마우스의 Y 좌표가 50px 이하일 때 header 요소를 표시합니다.
+        if (e.clientY <= 50) {
+            header.classList.add('show');
+        }
+    });
+
+    let header = document.querySelector('.header');
+
+    header.addEventListener('mouseleave', function () {
+        header.classList.remove('show');
+    });
+
+
+    let headerVals = document.querySelectorAll('.headerVal');
+
+for (let i = 0; i < headerVals.length; i++) {
+    headerVals[i].addEventListener('mouseover', function () {
+        this.style.fontWeight = 'bolder';
+        this.style.fontSize = '1.1rem';
+    });
+
+    headerVals[i].addEventListener('mouseout', function () {
+        this.style.fontWeight = '';
+        this.style.fontSize = '';
+    });
+}
+
+function goMain() {
+    location.href = "/main"
+}
+</script>

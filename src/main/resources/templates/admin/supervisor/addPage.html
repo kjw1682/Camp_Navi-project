@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>회원가입</title>
+</head>
+<style>
+    /* 모달 창 스타일 */
+    .modal {
+        display: none; /* 초기에는 숨김 */
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        margin-right: 0.5rem;
+    }
+</style>
+<body>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+        $('#submitBtn').prop('disabled', true); // 초기에 회원가입 버튼 비활성화
+    });
+
+    function validatePW() {
+        var op = $("#originpw").val();
+        var cp = $("#pwcheck").val();
+        var hp = $("#hiddenPw").val();
+        const pwPattern = /^.{2,}$/;
+        if (pwPattern.test(op)) {
+            if (op === cp) {
+                $("#hiddenPw").val(op);
+                alert("비밀번호가 일치합니다.");
+                $('#submitBtn').prop('disabled', false);
+            } else {
+                alert("비밀번호가 일치하지 않습니다.");
+                $("#pwcheck").val("");
+                $('#submitBtn').prop('disabled', true);
+                $("#originpw").focus();
+            }
+        } else {
+            alert("비밀번호는 8자 이상이어야 합니다.");
+            $("#originpw").focus();
+        }
+
+    }
+
+    function validateId() {
+        var username = $("#userId").val();
+        var hi = $("#hiddenId").val();
+        const usernamePattern = /^.{2,}$/;
+
+        if (usernamePattern.test(username)) {
+            $.ajax({
+                type: 'POST',
+                url: '/member/validateUser',
+                data: {
+                    username: username
+                },
+                success: function (data) {
+                    $("#hiddenId").val(username);
+                    var result = data.result;
+                    if (result === "success") {
+                        alert("사용 가능한 아이디 입니다.")
+                        $('#submitBtn').prop('disabled', false);
+                    } else {
+                        alert("이미 존재하는 아이디 입니다.")
+                        $('#submitBtn').prop('disabled', true);
+                        $("#userId").focus()
+                    }
+
+                },
+                error: function (error) {
+                    alert("전송 실패")
+                }
+            });
+        } else {
+            alert("아이디는 6글자 이상 입력해주세요.");
+            $("#userId").focus();
+        }
+
+    }
+
+    function submitProc() {
+        var username = $("#userId").val();
+        var password = $("#originpw").val();
+        var name = $("#name").val();
+
+        if (username == "") {
+            alert("아이디를 입력해주세요!");
+            $("#userId").focus();
+        } else if ($("#hiddenId").val() != username) {
+            alert("아이디 중복확인을 진행해주세요!");
+            $("#userId").focus();
+        } else if (password == "") {
+            alert("비밀번호를 입력해주세요!");
+            $("#originpw").focus();
+        } else if ($("#hiddenPw").val() != password) {
+            alert("비밀번호 일치 여부를 확인해주세요!");
+            $("#originpw").focus();
+        } else if (name == "") {
+            alert("이름을 입력해주세요!");
+            $("#name").focus();
+        } else {
+            $("#joinForm").attr("action", "/admin/adminAddProc").submit();
+        }
+
+    }
+</script>
+
+
+<div class="box centerBox" id="membershipBox">
+    <h1 class="major">관리자 추가</h1>
+    <div id="membershipContain">
+        <form action="/admin/adminAddProc" method="post" name="joinForm" id="joinForm">
+            <div class="memberContain">
+                <input placeholder="아이디" type="text" name="username" id="userId">
+                <input type="hidden" id="hiddenId">
+                <button type="button" onclick="validateId()">id 중복 확인</button>
+            </div>
+
+            <div class="memberContain">
+                <div class="buttonContain">
+                    <input placeholder="비밀번호" type="password" name="pw" id="originpw">
+                    <input placeholder="비밀번호 확인" type="password" id="pwcheck">
+                    <input type="hidden" id="hiddenPw">
+                </div>
+                <button type="button" onclick="validatePW()">비밀번호 일치 확인</button>
+            </div>
+
+            <div class="memberContain">
+                <input class="webkit" placeholder="이름" type="text" name="name" id="name">
+            </div>
+
+            <button class="mainBtn" type="button" id="submitBtn" onclick="submitProc()">관리자 추가</button>
+        </form>
+    </div>
+</div>
+
+<th:block th:insert="insert/footer.html"></th:block>
+<!--배경사진-->
+
+<!-- 모달 창 -->
+<div id="verificationModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <p>인증번호를 입력하세요:</p>
+        <input type="text" id="verificationCodeInput">
+        <button onclick="checkVerificationCode()">확인</button>
+    </div>
+</div>
+</body>
+</html>

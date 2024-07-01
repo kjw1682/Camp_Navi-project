@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<style>
+    .page-number {
+        margin: 0 5px; /* 좌우 여백 조정 */
+        cursor: pointer; /* 마우스 포인터를 손가락 모양으로 변경 */
+    }
+
+    .page-number.current {
+        font-weight: bold; /* 현재 페이지 숫자는 볼드체로 표시 */
+    }
+</style>
+<body>
+
+<th:block th:insert="~{insert/header.html}"></th:block>
+
+
+<div class="box detailBox">
+    <div class="loading" style="display: block;">
+        <img class="camp-loading" src="/assets/images/bg/lodingBg.gif">
+    </div>
+    <div class="slideshow-container">
+        <img alt="arrowL" class="arrow" id="arrowL" src="/assets/images/icon/arrowL.png">
+        <img alt="arrowR" class="arrow" id="arrowR" src="/assets/images/icon/arrowR.png">
+
+        <div class="slideshow">
+            <div class="slide" th:each="image : ${imageUrls}">
+                <img class="detailImg" onload="hideLoading()" style="display: none;" th:src="${image.imageUrl}">
+            </div>
+        </div>
+        <!-- 슬라이드 쇼의 하단에 동그라미를 추가 -->
+        <div class="dots" id="dots">
+            <!-- 각 슬라이드에 대응하는 동그라미를 추가 -->
+            <div class="dot" th:each="image, index : ${imageUrls}" th:id="'dot' + ${index}"></div>
+        </div>
+
+        <div th:each="image, index : ${imageUrls}">
+            <input name="slide" th:checked="${index == 0}" th:id="'radio' + ${index}" type="radio">
+        </div>
+    </div>
+
+
+
+    <div class="buttonContain">
+        <th:block th:each="camp : ${camps}">
+            <h1 class="campingName" th:text="${camp.facltNm}">캠핑장 이름이 들어가는 곳</h1>
+            <!--찜하기 버튼-->
+            <input class="saveInput" th:checked="${jjimChecked}" th:id="'saveBtn-' + ${cseq}"
+                   th:name="'saveBtn-' + ${cseq}"
+                   type="checkbox">
+            <label class="saveLabel" id="saveLabel" th:data-cseq="${cseq}" th:for="'saveBtn-' + ${cseq}">
+                <img class="saveBtn saveBtnImg"
+                     th:src="${jjimChecked ? '/assets/images/icon/like-full.png' : '/assets/images/icon/like-empty.png'}">
+            </label>
+            <input id="campName" th:value="${camp.facltNm}" type="hidden"/>
+            <input id="cseq" th:value="${cseq}" type="hidden"/>
+        </th:block>
+    </div>
+
+    <p class="campingGrade">
+        <th:block th:with="starScore=${starScore}">
+        <span class="satisfaction" th:alt="${starScore}" th:title="${starScore}">
+            <th:block th:if="${starScore < 0.5}">
+                <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+            </th:block>
+            <th:block th:if="${starScore >= 0.5 and starScore < 1.0}">
+                <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+            </th:block>
+            <th:block th:if="${starScore >= 1.0}">
+                <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+            </th:block>
+
+            <th:block th:if="${starScore < 1.5}">
+                <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+            </th:block>
+            <th:block th:if="${starScore >= 1.5 and starScore < 2.0}">
+                <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+            </th:block>
+            <th:block th:if="${starScore >= 2.0}">
+                <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+            </th:block>
+
+            <th:block th:if="${starScore < 2.5}">
+                <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+            </th:block>
+            <th:block th:if="${starScore >= 2.5 and starScore < 3.0}">
+                <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+            </th:block>
+            <th:block th:if="${starScore >= 3.0}">
+                <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+            </th:block>
+
+            <th:block th:if="${starScore < 3.5}">
+                <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+            </th:block>
+            <th:block th:if="${starScore >= 3.5 and starScore < 4.0}">
+                <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+            </th:block>
+            <th:block th:if="${starScore >= 4.0}">
+                <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+            </th:block>
+
+            <th:block th:if="${starScore < 4.5}">
+                <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+            </th:block>
+            <th:block th:if="${starScore >= 4.5 and starScore < 5.0}">
+                <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+            </th:block>
+            <th:block th:if="${starScore >= 5.0}">
+                <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+            </th:block>
+        </span>
+        </th:block>
+    </p>
+
+    <div class="buttonContain" id="reviewGrade">
+        <th:block th:with="starScore=${starScore}">
+            <img class="humanIcon" src="/assets/images/icon/human.png">
+            <span th:text="${starScore}"></span><span th:text="'리뷰수'+ '(' + ${reviewCnt} +'개의 후기)'"></span>
+        </th:block>
+    </div>
+    <div class="buttonContain">
+        <button class="mainBtn" id="reservationBtn" target="_blank" th:data-url="${camp.resveUrl}"
+                th:each="camp : ${camps}" th:if="${not #strings.isEmpty(camp.resveUrl)}" type="button">
+            예약하기
+        </button>
+        <button id="goingBtn" type="button">커뮤니티</button>
+    </div>
+
+    <div class="buttonContain" id="detailContain">
+        <input checked class="detailBtn" id="viewDetailBtn" name="btn" type="radio">
+        <label for="viewDetailBtn">상세보기</label>
+        <input class="detailBtn" id="reviewBtn" name="btn" type="radio">
+        <label for="reviewBtn">후기</label>
+    </div>
+
+    <div id="campDetail" th:each="camp : ${camps}">
+        <span th:if="${not #strings.isEmpty(camp.intro)}">
+            <h2 class="major">소개</h2>
+            <span class="detailContent">
+            <span th:text="${camp.intro}"></span>
+            </span>
+        </span>
+
+        <h2 class="major">위치</h2>
+        <span class="detailContent"></span>
+        <span th:text="${camp.addr1} + ${camp.addr2}"/>
+
+        <div id="map" style="width:800px;height:500px;margin: 10px"></div>
+
+        <span th:if="${not #strings.isEmpty(camp.tel)}">
+        <h2 class="major">전화번호</h2>
+        <span class="detailContent">
+        <span th:text="${camp.tel}"></span>
+        </span></span>
+
+        <span th:if="${not #strings.isEmpty(camp.homepage)}">
+        <h2 class="major">홈페이지</h2>
+        <span class="detailContent">
+        <a target="_blank" th:href="${camp.homepage}" th:text="${camp.homepage}"></a>
+        </span></span>
+
+        <h2 class="major">편의시설</h2>
+        <div id="detailIcon">
+    <span th:if="${camp.autoSiteCo != '0'}">
+        <img alt="car" class="imgIcon" src="/assets/images/icon/car.png">자동차 야영장 <span
+            th:text="${camp.autoSiteCo}"></span> EA
+    </span>
+            <span th:if="${camp.caravSiteCo != '0'}">
+        <img alt="caravan" class="imgIcon" src="/assets/images/icon/caravan.png">카라반 <span
+                    th:text="${camp.caravSiteCo}"></span> EA
+    </span>
+            <span th:if="${camp.glampSiteCo != '0'}">
+        <img alt="glamping" class="imgIcon" src="/assets/images/icon/glamping.png">글램핑 <span
+                    th:text="${camp.glampSiteCo}"></span> EA
+    </span>
+            <span th:if="${camp.gnrlSiteCo != '0'}">
+        <img alt="camping" class="imgIcon" src="/assets/images/icon/camping.png">일반 야영장 <span
+                    th:text="${camp.gnrlSiteCo}"></span> EA
+    </span>
+            <span th:if="${camp.brazierCl != '0'}">
+        <img alt="brazier" class="imgIcon" src="/assets/images/icon/brazier.png">화로대 <span
+                    th:text="${camp.brazierCl}"></span>
+    </span>
+            <span th:if="${camp.extshrCo != '0'}">
+        <img alt="emergency" class="imgIcon" src="/assets/images/icon/emergency.png">소화기 <span
+                    th:text="${camp.extshrCo}"></span> EA
+    </span>
+            <span th:if="${camp.toiletCo != '0'}">
+        <img alt="toilet" class="imgIcon" src="/assets/images/icon/toilet.png">화장실 <span
+                    th:text="${camp.toiletCo}"></span> EA
+    </span>
+            <span th:if="${camp.swrmCo != '0'}">
+        <img alt="shower" class="imgIcon" src="/assets/images/icon/shower-room.png">샤워실 <span
+                    th:text="${camp.swrmCo}"></span> EA
+    </span>
+            <span th:if="${camp.animalCmgCl != '0'}">
+        <img alt="dog" class="imgIcon" src="/assets/images/icon/dog.png">애완동물출입 <span
+                    th:text="${camp.animalCmgCl}"></span>
+    </span>
+        </div>
+
+    </div>
+
+    <!-- 서버로부터 전달된 mapX, mapY 값을 받을 수 있는 공간 (화면에 보이지 않음) -->
+    <input id="LoMapX" th:value="${mapX}" type="hidden"/>
+    <input id="LoMapY" th:value="${mapY}" type="hidden"/>
+
+    <div id="review">
+        <a th:href="@{/review/insert_form(cseq=${cseq})}">
+            <button class="webkit" id="reviewCseq">
+                <input name="reviewCseq" th:value="${cseq}" type="hidden"/>
+                리뷰작성하기
+            </button>
+        </a>
+
+        <div class="reviewList">
+            <!-- 리스트 영역 -->
+            <div id="reviewList"></div>
+
+            <!-- 페이지 영역 -->
+            <div class="page-box">
+                <img class="icon width-rem1" id="prevBtn" src="/assets/images/icon/arrowL.png">
+                <div class="page-numbers" id="pagination"></div> <!-- 페이지 숫자가 들어갈 영역 -->
+                <img class="icon width-rem1" id="nextBtn" src="/assets/images/icon/arrowR.png">
+                <!-- hidden inputs -->
+                <input id="currentPage" name="currentPage" type="hidden" value="1">
+                <input id="maxPage" name="maxPage" type="hidden" value="1">
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+</div>
+
+<th:block th:insert="~{insert/footer.html}"></th:block>
+<!-- 페이징 처리 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 초기 데이터 로딩
+        loadReviewPage(1); // 초기에 첫 페이지 로딩
+
+        // 이전 페이지로 이동
+        document.getElementById('prevBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentPage').value);
+            if (currentPage > 1) {
+                loadReviewPage(currentPage - 1);
+            }
+        });
+
+        // 다음 페이지로 이동
+        document.getElementById('nextBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentPage').value);
+            const maxPage = parseInt(document.getElementById('maxPage').value);
+            if (currentPage < maxPage) {
+                loadReviewPage(currentPage + 1);
+            }
+        });
+    });
+
+    // 리뷰 데이터를 비동기로 로딩하는 함수
+    function loadReviewPage(pageNumber) {
+        const cseq = document.getElementById('cseq').value;
+        fetch(`/camp/detail/reviews/${cseq}?page=${pageNumber}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 서버로부터 받은 데이터를 이용하여 리뷰 목록을 업데이트
+                document.getElementById('reviewList').innerHTML = data.reviewListHtml; // 리뷰 목록을 서버에서 받은 HTML로 업데이트
+                document.getElementById('currentPage').value = data.currentPage; // 현재 페이지 업데이트
+                document.getElementById('maxPage').value = data.maxPage; // 최대 페이지 업데이트
+
+                // 페이지 숫자 업데이트
+                updatePagination(data.currentPage, data.maxPage);
+            })
+
+    }
+
+    function updatePagination(currentPage, maxPage) {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = ''; // 이전에 추가된 페이지 번호 초기화
+
+        // 페이지 숫자를 표시할 최대 범위 설정
+        const displayRange = 3; // 현재 페이지를 중심으로 좌우에 몇 개의 페이지 숫자를 표시할 것인지 지정
+
+        // 시작 페이지와 끝 페이지 계산
+        let startPage = currentPage - displayRange;
+        let endPage = currentPage + displayRange;
+        if (startPage < 1) {
+            startPage = 1;
+            endPage = Math.min(startPage + displayRange * 2, maxPage);
+        }
+        if (endPage > maxPage) {
+            endPage = maxPage;
+            startPage = Math.max(endPage - displayRange * 2, 1);
+        }
+
+        // 시작 페이지와 끝 페이지 사이에 페이지 버튼 생성
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('span');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-number');
+
+            if (i === currentPage) {
+                pageButton.classList.add('current');
+            }
+
+            pageButton.addEventListener('click', function () {
+                loadReviewPage(i);
+            });
+
+            paginationDiv.appendChild(pageButton);
+        }
+    }
+</script>
+
+<!-- 찜하기 기능 스크립트 -->
+<script>
+    document.querySelectorAll('.saveLabel').forEach(label => {
+        label.addEventListener('click', function (event) {
+            event.preventDefault(); // 기본 동작 방지
+
+            const cseq = document.getElementById('cseq').value;
+            const checkbox = document.getElementById('saveBtn-' + cseq);
+            let isChecked = checkbox.checked;
+
+            // isChecked 변수는 checkbox의 현재 상태를 나타냅니다.
+            // 예시로, isChecked가 true인 경우는 찜 상태를 나타내며, false인 경우는 찜 해제 상태를 나타냅니다.
+
+            if (isChecked === false) { // 현재 체크가 되지 않은 상태인 경우
+                if (confirm("캠핑장을 찜하시겠습니까?")) {
+                    fetch('/camp/detail/jjim/' + cseq, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            checkbox.checked = true; // checkbox를 체크 상태로 변경
+                            this.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png'; // 이미지 변경
+                            alert("캠핑장 찜리스트에 추가되었습니다.")
+                        } else {
+                            alert("캠핑장 찜하기에 실패했습니다.");
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert("캠핑장 찜하기에 실패했습니다.");
+                    });
+                }
+            } else if (isChecked === true) { // 현재 체크된 상태인 경우
+                if (confirm("캠핑장 찜하기를 취소하시겠습니까?")) {
+                    fetch('/camp/detail/jjim/delete/' + cseq, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            checkbox.checked = false; // checkbox를 체크 해제 상태로 변경
+                            this.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png'; // 이미지 변경
+                            alert("캠핑장 찜 리스트에서 삭제되었습니다.")
+                        } else {
+                            response.text().then(text => {
+                                console.error('Failed to remove from jjim list:', text);
+                                alert("캠핑장 찜 삭제에 실패하였습니다." + text);
+                            });
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert("캠핑장 찜 삭제에 실패하였습니다.");
+                    });
+                }
+            }
+        });
+    });
+</script>
+<!-- 카카오맵 api 스크립트 -->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b5e3a16b6086d7012444eab79f129328" type="text/javascript"></script>
+<script>
+    // 이미지 지도에 표시할 마커입니다
+    // 서버로부터 전달된 mapX, mapY 값을 가져와서 JavaScript 변수에 할당
+    const mapX = document.getElementById('LoMapX').value;
+    const mapY = document.getElementById('LoMapY').value;
+    const campName = document.getElementById('campName').value;
+
+    console.log("mapX:", mapX);
+    console.log("mapY:", mapY);
+
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+        mapOption = {
+            center: new kakao.maps.LatLng(mapY, mapX), // 지도의 중심좌표
+            level: 3 // 지도의 확대 레벨
+        };
+
+    var map = new kakao.maps.Map(mapContainer, mapOption);
+
+    // 마커가 표시될 위치입니다
+    var markerPosition = new kakao.maps.LatLng(mapY, mapX);
+
+    // 마커를 생성합니다
+    var marker = new kakao.maps.Marker({
+        position: markerPosition
+    });
+
+    // 마커가 지도 위에 표시되도록 설정합니다
+    marker.setMap(map);
+
+    var iwContent = `<div style="padding:5px;">${campName} <br><a href="https://map.kakao.com/link/map/${campName},${mapY},${mapX}" style="color:blue" target="_blank">큰지도보기</a> <a href="https://map.kakao.com/link/to/${campName},${mapY},${mapX}" style="color:blue" target="_blank">길찾기</a></div>`; // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+    iwPosition = new kakao.maps.LatLng(mapY, mapX); //인포윈도우 표시 위치입니다
+
+    // 인포윈도우를 생성합니다
+    var infowindow = new kakao.maps.InfoWindow({
+        position: iwPosition,
+        content: iwContent
+    });
+
+    // 마커 위에 인포윈도우를 표시합니다. 두번째 파라미터인 marker를 넣어주지 않으면 지도 위에 표시됩니다
+    infowindow.open(map, marker);
+
+
+</script>
+
+<script>
+    document.getElementById('viewDetailBtn').addEventListener('click', function () {
+        document.getElementById('campDetail').style.display = 'block';
+        document.getElementById('review').style.display = 'none';
+    });
+
+    document.getElementById('reviewBtn').addEventListener('click', function () {
+        document.getElementById('campDetail').style.display = 'none';
+        document.getElementById('review').style.display = 'block';
+    });
+
+    window.onload = function () {
+        // 슬라이드 쇼의 슬라이드를 가져옵니다.
+        var slides = document.querySelectorAll('.slide');
+
+        // 슬라이드 쇼의 동그라미를 가져옵니다.
+        var dots = document.querySelectorAll('.dot');
+
+        // 현재 표시되는 슬라이드의 인덱스를 저장합니다.
+        var currentSlide = 0;
+
+        // 모든 슬라이드와 동그라미를 숨깁니다.
+        function hideAllSlides() {
+            for (var i = 0; i < slides.length; i++) {
+                slides[i].style.display = 'none';
+                dots[i].classList.remove('active');
+            }
+        }
+
+        // 지정된 슬라이드를 표시하고, 해당 슬라이드에 대응하는 동그라미의 색상을 변경합니다.
+        function showSlide(index) {
+            hideAllSlides();
+            slides[index].style.display = 'block';
+            dots[index].classList.add('active');
+        }
+
+        // 다음 슬라이드를 표시합니다.
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // 이전 슬라이드를 표시합니다.
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // 첫 번째 슬라이드를 표시합니다.
+        showSlide(currentSlide);
+
+        // arrowR 버튼과 arrowL 버튼에 이벤트 리스너를 추가합니다.
+        document.querySelector('#arrowR').addEventListener('click', nextSlide);
+        document.querySelector('#arrowL').addEventListener('click', prevSlide);
+    }
+
+    document.getElementById('reservationBtn').addEventListener('click', function () {
+        // data-url 속성을 읽어옴
+        location.href = this.getAttribute('data-url');
+    });
+
+    document.querySelector('.saveLabel').addEventListener('mouseover', function () {
+        if (!document.querySelector('#saveBtn').checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png';
+        }
+    });
+
+    document.querySelector('.saveLabel').addEventListener('mouseout', function () {
+        if (!document.querySelector('#saveBtn').checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png';
+        }
+    });
+
+    document.querySelector('#saveBtn').addEventListener('change', function () {
+        if (this.checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png';
+        } else {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png';
+        }
+    });
+
+</script>
+<script>
+    document.getElementById('goingBtn').addEventListener('click', function () {
+        const cseq = document.getElementById('cseq').value;
+        const campName = document.getElementById('campName').value;
+        const url = `/chat/room?cseq=${cseq}&campName=${encodeURIComponent(campName)}`;
+        window.location.href = url;
+    });
+
+    function hideLoading() {
+        const loadingElement = document.querySelector('.loading');
+        const detailImages = document.querySelectorAll('.detailImg');
+
+        // 이미지 로드 이벤트 핸들러
+        function onImageLoad() {
+            // 모든 이미지가 로드되었는지 확인
+            const allImagesLoaded = Array.from(detailImages).every(img => img.complete);
+
+            // 모든 이미지가 로드되었다면 로딩 이미지를 숨기고 실제 이미지를 표시
+            if (allImagesLoaded) {
+                loadingElement.style.display = 'none';
+                detailImages.forEach(img => img.style.display = 'block');
+            }
+        }
+
+        // 모든 이미지에 로드 이벤트 리스너 추가
+        detailImages.forEach(img => {
+            // 이미지가 이미 로드되었는지 확인하고 로드되지 않은 경우 이벤트 리스너 추가
+            if (img.complete) {
+                onImageLoad();
+            } else {
+                img.addEventListener('load', onImageLoad);
+                img.addEventListener('error', onImageLoad); // 오류 처리
+            }
+        });
+    }
+
+    // 페이지 로드 시 hideLoading 함수 호출
+    document.addEventListener('DOMContentLoaded', hideLoading);
+</script>
+</body>
+</html>

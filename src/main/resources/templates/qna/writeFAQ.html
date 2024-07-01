@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<article class="box centerBox" id="review-detail-box">
+    <div class="container">
+        <h2 class="mb-4">FAQ</h2>
+        <hr class="vertical">
+        <div class="card webkit" id="faqForm">
+            <form action="/qna/faq/write" method="post" enctype="multipart/form-data" id="writeForm_FAQ">
+            <div class="card-header">
+                <input class="webkit" type="text" name="title" id="title" placeholder="제목을 적어주세요"/>
+            </div>
+            <hr>
+            <div class="card-body">
+                <textarea class="qna-content" name="content" id="content" placeholder="내용을 적어주세요"></textarea>
+                <hr>
+                <button type="button" id="input_file">파일 첨부</button>
+                <input type="text" id="input_file_name" name="input_file_name" value="파일 없음" readonly>
+                <input type="file" name="img" id="faqImg" hidden="hidden">
+                <input type="hidden" id="isEmpty" name="isEmpty" th:value="${isEmpty}">
+                <button type="button" id="input_file_clear">삭제</button>
+                <hr>
+                <div class="buttonContain button-full">
+                    <!-- 작성자만 수정 및 삭제 버튼을 볼 수 있도록 -->
+                    <button type="button" class="webkit" onclick="faqWrite()">제출하기</button>
+
+                    <!-- 목록으로 돌아가기 -->
+                    <button type="button" class="webkit" onclick="backToHome()">뒤로가기</button>
+                </div>
+
+                <hr>
+            </div>
+            </form>
+        </div>
+    </div>
+
+</article>
+<input type="hidden" th:value="${member.role}" id="userRole">
+<th:block th:insert="/insert/footer"></th:block>
+<script>
+
+    function faqWrite() {
+        if ($("#title").val().length == 0) {
+            alert("제목을 입력해 주세요.");
+            $("#title").focus();
+        } else if ($("#content").val().length == 0) {
+            alert("내용을 입력해 주세요.");
+            $("#content").focus();
+        } else {
+            $("#writeForm_FAQ").submit();
+        }
+    }
+
+    function backToHome() {
+        history.go(-1);
+    }
+
+    document.getElementById("input_file").addEventListener("click", function() {
+        $("#faqImg").click();
+    });
+
+    document.getElementById("input_file_clear").addEventListener("click", function() {
+        $("#input_file_name").val('파일 없음');
+        document.getElementById("faqImg").value = "";
+        $("#isEmpty").val(true);
+    });
+
+    document.getElementById("faqImg").addEventListener("change", function() {
+        let target = document.getElementById("faqImg");
+        $("#input_file_name").val(target.files[0].name);
+        $("#isEmpty").val(false);
+    });
+</script>
+</body>
+</html>

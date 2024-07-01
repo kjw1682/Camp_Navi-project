@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>Error</title>
+</head>
+<body>
+    <h1>인증 실패</h1>
+    <hr><br>
+    <h1>권한이 없습니다.</h1>
+    <button type="button" id="backBtn">뒤로가기</button>
+</body>
+<script>
+    document.getElementById('backBtn').addEventListener('click', function () {
+        history.go(-1);
+    })
+</script>
+</html>

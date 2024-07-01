@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/lodingBG.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>CampNavi</title>
+</head>
+<body>
+<!--
+<h1 class="lodingPage-title">잠시만 기다려 주세요.</h1>-->
+<input type="hidden" th:value="${cseq}" id="cseq"/>
+<!--배경사진-->
+<div id="bg"></div>
+<script>
+    $(document).ready(function() {
+        var cseq = $("#cseq").val();
+        location.href = "/camp/detail/?cseq=" + cseq;
+    })
+</script>
+</body>
+</html>

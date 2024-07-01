@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<article class="box centerBox" id="review-detail-box">
+    <div class="container">
+        <h2 class="mb-4">문의 답변</h2>
+        <hr class="vertical">
+        <div class="card webkit">
+            <form action="/qna/reply/edit" method="post" enctype="multipart/form-data" id="replyEditForm">
+                <input type="hidden" name="reply_id" th:value="${reply.reply_id}">
+            <div class="card-body">
+                <div class="info">
+                    <div class="space-between">
+                        <div class="space-between-flex">
+                            <span th:text="'작성자 : '+${reply.member.name}">작성자명</span>
+
+                        </div>
+                        <div class="space-between-flex">
+                            <span th:text="'작성일시 : '+${#dates.format(reply.createdAt, 'yyyy-MM-dd HH:mm:ss')}">날짜시간</span>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+
+                <textarea class="qna-content" id="content" name="content" th:text="${reply.content}"></textarea>
+                <hr>
+                <button type="button" id="input_file">파일 첨부</button>
+                <input type="text" id="input_file_name" name="input_file_name" th:value="${img_file}" readonly>
+                <input type="file" id="img" hidden="hidden" name="img">
+                <input type="hidden" id="isEmpty" name="isEmpty" th:value="${isEmpty}">
+                <button type="button" id="input_file_clear">삭제</button>
+                <hr>
+                <div class="buttonContain button-full">
+                    <!-- 작성자만 수정 및 삭제 버튼을 볼 수 있도록 -->
+                    <button class="webkit" type="button" onclick="replyEdit()">수정하기</button>
+
+                    <!-- 목록으로 돌아가기 -->
+                    <button type="button" class="webkit" onclick="backToDetail()">뒤로가기</button>
+                </div>
+
+                <hr>
+            </div>
+            </form>
+        </div>
+    </div>
+
+</article>
+<th:block th:insert="/insert/footer"></th:block>
+<script>
+    function replyEdit() {
+        if ($("#content").val().length == 0) {
+            alert("답변을 작성해 주세요.");
+            $("#content").focus();
+        } else {
+            $("#replyEditForm").submit();
+        }
+    }
+
+    function backToDetail() {
+        history.go(-1);
+    }
+
+    document.getElementById("input_file").addEventListener("click", function() {
+        $("#img").click();
+    });
+
+    document.getElementById("input_file_clear").addEventListener("click", function() {
+        $("#input_file_name").val('파일 없음');
+        document.getElementById("img").value = "";
+        $("#isEmpty").val(true);
+    });
+
+    document.getElementById("img").addEventListener("change", function() {
+        let target = document.getElementById("img");
+        $("#input_file_name").val(target.files[0].name);
+        $("#isEmpty").val(false);
+    });
+</script>
+</body>
+</html>

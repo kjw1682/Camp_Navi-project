@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/loginBG.css" rel="stylesheet"/>
+    <title>로그인 페이지</title>
+</head>
+<body>
+<div id="wrapper">
+    <img src="/assets/images/logo/typo.png" id="logoTypo">
+    <div class="content">
+        <form id="loginForm" action="/oauth-login/member/loginProc" method="post">
+            <input id="userId" type="text" name="username" th:placeholder="아이디">
+            <input id="userPw" type="password" name="pw" th:placeholder="비밀번호">
+            <button class="mainBtn" id="loginBtn" type="submit">로그인</button>
+        </form>
+    </div>
+
+    <div class="buttonContain" id="loginGroup">
+        <button id="registerBtn" type="button">회원가입</button>
+    </div>
+    <div class="buttonContain" id="searchGroup">
+        <button class="member-find" id="searchUsernameBtn" type="button">아이디 찾기</button>
+        <button class="member-find" id="searchPwBtn" type="button">비밀번호 찾기</button>
+    </div>
+
+    <div class="buttonContain" id="snsGroup">
+        <a href="/oauth2/authorization/kakao" class="snsA"><img src="/assets/images/icon/kakao.png" alt="kakaoLogin"></a>
+        <a href="/oauth2/authorization/naver" class="snsA"><img src="/assets/images/icon/naver.png" alt="naverLogin"></a>
+        <a href="/oauth2/authorization/google" class="snsA"><img src="/assets/images/icon/google.png" alt="googleLogin"></a>
+        <a href="/oauth2/authorization/facebook" class="snsA"><img src="/assets/images/icon/facebook.png" alt="facebookLogin"></a>
+    </div>
+
+</div>
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+
+<script>
+    document.getElementById('registerBtn').addEventListener('click', function () {
+        location.href = '/member/membershipAgree';
+    });
+
+    document.getElementById('loginBtn').addEventListener('click', function () {
+        location.href = '/camp/search'
+    })
+
+    document.getElementById('searchUsernameBtn').addEventListener('click', function () {
+        var type = 'username';
+        location.href = '/member/search/' + type;
+    })
+
+    document.getElementById('searchPwBtn').addEventListener('click', function () {
+        var type = 'password'
+        location.href = '/member/search/' + type;
+    })
+</script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var message = /*[[${msg}]]*/ '';
+    if (message != null) {
+        alert(message);
+    }
+    /*]]>*/
+</script>
+<!--배경사진-->
+<div id="bg"></div>
+
+</body>
+</html>

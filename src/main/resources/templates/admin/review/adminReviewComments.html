@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"
+            integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
+            crossorigin="anonymous"></script>
+    <title>관리자 페이지</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* 폰트 설정 */
+            line-height: 1.6; /* 줄 간격 */
+        }
+        .content {
+            padding: 20px;
+        }
+        .comment-section {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .comment-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .comment {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            background-color: #ffffff;
+        }
+        .comment .comment-actions {
+            margin-top: 5px;
+        }
+        .comment .comment-actions a {
+            margin-right: 10px;
+            color: #dc3545;
+        }
+        .comment .comment-content {
+            margin-bottom: 5px;
+        }
+        .comment .comment-content span {
+            font-weight: bold;
+        }
+        .comment .comment-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .comment-form {
+            margin-top: 20px;
+        }
+        .comment-form textarea {
+            width: 50%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            resize: none;
+        }
+        .comment-form .btn {
+            margin-top: 10px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .comment-form .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-primary {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="content">
+        <form id="commentForm" name="commentForm" method="post">
+            <br> <br>
+            <div>
+                <div>
+                    <span><h3>댓글</h3></span> <span id="Cnt"></span>
+                </div>
+                <div id="reply">
+
+                </div>
+            </div>
+            <input type="hidden" id="vseq" name="vseq" th:value="${reviewVo.review.vseq}"/>
+        </form>
+    </div>
+
+    <div class="comment-section">
+        <form id="commentListForm" name="commentListForm" method="get">
+            <div id="commentList">
+                <!-- 댓글 출력 영역 -->
+            </div>
+        </form>
+
+        <!-- 페이지 처리 영역 -->
+        <div>
+            <ul id="pagination">
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        getCommentsAndCurrentMember();
+    });
+
+    // getCommentsAndCurrentMember 함수 정의
+    function getCommentsAndCurrentMember() {
+        var vseq = $("#vseq").val(); // vseq 값을 가져오기
+
+        $.ajax({
+            type: 'GET',
+            url: '/admin/review/comment/list',
+            dataType: 'json',
+            data: {vseq: vseq},
+            success: function (data) {
+                var commentCount = data.commentCount;
+                var parentCommentCmseqArray = data.parentCommentCmseqArray;
+                var parentCommentMseqArray = data.parentCommentMseqArray;
+                var parentCommentMemberArray = data.parentCommentMemberArray;
+                var parentCommentContentArray = data.parentCommentContentArray;
+                var parentCommentDateArray = data.parentCommentDateArray;
+                var childCommentCmseqArray = data.childCommentCmseqArray;
+                var childCommentMseqArray = data.childCommentMseqArray;
+                var childCommentMemberArray = data.childCommentMemberArray;
+                var childCommentContentArray = data.childCommentContentArray;
+                var childCommentDateArray = data.childCommentDateArray;
+
+                // 가져온 댓글 목록과 사용자 정보를 이용하여 화면에 표시
+                showHTML(vseq, commentCount, parentCommentCmseqArray, parentCommentMseqArray, parentCommentMemberArray, parentCommentContentArray, parentCommentDateArray, childCommentCmseqArray, childCommentMseqArray, childCommentMemberArray, childCommentContentArray, childCommentDateArray);
+
+            },
+            error: function () {
+                alert("댓글 목록을 조회하지 못했습니다.");
+            }
+        });
+
+    }
+
+    // 대댓글 폼 토글 함수
+    function toggleReplyForm(cmseq, vseq) {
+        $("#replyForm_" + cmseq + "_" + vseq).toggle(); // 대댓글 폼 토글
+    }
+
+    function showHTML(vseq, commentCount, parentCommentCmseqArray, parentCommentMseqArray, parentCommentMemberArray, parentCommentContentArray, parentCommentDateArray, childCommentCmseqArray, childCommentMseqArray, childCommentMemberArray, childCommentContentArray, childCommentDateArray) {
+        var html = "";
+        if (parentCommentCmseqArray.length > 0) {
+            for (let i = 0; i < parentCommentCmseqArray.length; i++) {
+                // 부모 댓글 섹션
+                html += "<div class='comment' id=\"parent_comment_" + parentCommentCmseqArray[i] + "\">"; // 각 부모 댓글에 대해 고유한 id 부여
+                html += "<div class='comment-content'><span>작성자: " + parentCommentMemberArray[i] + "</span>&nbsp;&nbsp;&nbsp; ";
+                html += "<span class='comment-date'>작성일: " + displayTime(parentCommentDateArray[i]) + "</span></div>";
+                html += "<div class='comment-content'>" + parentCommentContentArray[i] + "</div>";
+                html += "<div class='comment-actions'>";
+                html += "<a href='#' onclick=\"deleteComment(" + parentCommentCmseqArray[i] + "); return false\" class='btn' id='commentsDel'>삭제</a>";
+                html += "</div>";
+
+
+                // 자식 댓글 섹션
+                if (childCommentCmseqArray[i].length > 0) {
+                    for (let j = 0; j < childCommentCmseqArray[i].length; j++) {
+                        html += "<div class='comment child-comment' id=\"child_comment_" + childCommentCmseqArray[i][j] + "\">"; // 각 자식 댓글에 대해 고유한 id 부여
+                        html += "<div class='comment-content'><span>작성자: " + childCommentMemberArray[i][j] + "</span>&nbsp;&nbsp;&nbsp; ";
+                        html += "<span class='comment-date'>작성일: " + displayTime(childCommentDateArray[i][j]) + "</span></div>";
+                        html += "<div class='comment-content'>" + childCommentContentArray[i][j] + "</div>";
+                        html += "<div class='comment-actions'>";
+                        html += "<a href='#' onclick=\"deleteComment(" + childCommentCmseqArray[i][j] + "); return false\" class='btn' id='commentsDel'>삭제</a>";
+                        html += "</div>";
+                        html += "</div>";
+                    }
+                }
+                html += "</div>";
+            }
+        } else {
+            html += "<div class='comment'>";
+            html += "<h3>등록된 댓글이 없습니다.</h3>";
+            html += "</div>";
+        }
+
+        $("#Cnt").html("댓글 " + "<span style='color: #00f;'>" + commentCount + "</span>");
+        $("#commentList").html(html); /* 브라우저에 출력 */
+    }
+
+    /*
+     ** 입력 파라미터:
+     **     timeValue - 상품평 등록 시간
+     */
+    function displayTime(timeValue) {
+        var today = new Date();
+
+        // timeValue를 Date객체로 변환
+        var dateObj = new Date(timeValue);
+
+        var timeGap = today.getTime() - dateObj.getTime();
+
+        // 오늘 작성된 것은 작성시각으로, 그 외는 작성일자로 표시
+        if (dateObj.getFullYear() == today.getFullYear() && dateObj.getMonth() == today.getMonth() && dateObj.getDate() == today.getDate()) {
+            var hh = dateObj.getHours();
+            var mi = dateObj.getMinutes();
+            var ss = dateObj.getSeconds();
+
+            return [(hh > 9 ? '' : '0') + hh, ':', (mi > 9 ? '' : '0') + mi, ':',
+                (ss > 9 ? '' : '0') + ss].join('');
+        } else {
+            var yy = dateObj.getFullYear();
+            var mm = dateObj.getMonth() + 1;
+            var dd = dateObj.getDate();
+
+            return [yy, '/', (mm > 9 ? '' : '0') + mm, '/', (dd > 9 ? '' : '0') + dd].join('');
+        }
+    }
+
+    function deleteComment(cmseq) {
+        if (confirm("댓글을 삭제하시겠습니까?")) {
+            $.ajax({
+                type: 'POST',
+                url: '/admin/review/comment/delete',
+                dataType: 'json',
+                data: {
+                    cmseq: cmseq,
+                },
+                contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+                success: function (data) {
+                    if (data.result == 'success') {
+                        getCommentsAndCurrentMember(); // 댓글 목록 새로고침
+                    } else {
+                        alert("댓글 삭제에 실패했습니다.");
+                    }
+                },
+                error: function (request, status, error) {
+                    alert("댓글 삭제 중 오류가 발생했습니다.");
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

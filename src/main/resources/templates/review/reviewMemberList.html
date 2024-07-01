@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>Review List</title>
+    <style>
+        .page-number {
+            margin: 0 5px; /* 좌우 여백 조정 */
+            cursor: pointer; /* 마우스 포인터를 손가락 모양으로 변경 */
+        }
+
+        .page-number.current {
+            font-weight: bold; /* 현재 페이지 숫자는 볼드체로 표시 */
+        }
+    </style>
+</head>
+<body>
+<th:block th:insert="/insert/header"></th:block>
+
+<article class="box centerBox" id="review-list">
+    <h3><span th:text="${authorList[0].review.member.nickname}"></span>님의 리뷰 목록</h3>
+    <input type="hidden" id="mseq" name="mseq" th:value="${authorList[0].review.member.mseq}">
+    <table>
+        <thead>
+        <tr>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일시</th>
+            <th>조회수</th>
+        </tr>
+        </thead>
+        <tbody id="reviewList">
+        </tbody>
+    </table>
+
+    <!-- 페이지 영역 -->
+    <div class="page-box">
+        <img class="icon width-rem1" id="prevReviewBtn" src="/assets/images/icon/arrowL.png">
+        <div id="reviewPagination" class="page-numbers"></div>
+        <img class="icon width-rem1" id="nextReviewBtn" src="/assets/images/icon/arrowR.png">
+        <input type="hidden" id="currentReviewPage" name="currentPage" value="1">
+        <input type="hidden" id="maxReviewPage" name="maxPage" value="1">
+    </div>
+
+    <h3><span th:text="${authorList[0].review.member.nickname}"></span>님의 댓글 목록</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>댓글</th>
+            <th>작성자</th>
+            <th>작성일시</th>
+        </tr>
+        </thead>
+        <tbody id="commentList">
+        </tbody>
+    </table>
+
+    <!-- 페이지 영역 -->
+    <div class="page-box">
+        <img class="icon width-rem1" id="prevCommentBtn" src="/assets/images/icon/arrowL.png">
+        <div id="commentPagination" class="page-numbers"></div>
+        <img class="icon width-rem1" id="nextCommentBtn" src="/assets/images/icon/arrowR.png">
+        <input type="hidden" id="currentCommentPage" name="currentPage" value="1">
+        <input type="hidden" id="maxCommentPage" name="maxPage" value="1">
+    </div>
+
+    <button onclick="window.location.href='/review/list'" class="button">리스트로 돌아가기</button>
+</article>
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+
+<div id="bg"></div>
+
+<!-- 리뷰 리스트 페이징 처리 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        loadReviewPage(1);
+        loadCommentPage(1);
+
+        document.getElementById('prevReviewBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentReviewPage').value);
+            if (currentPage > 1) {
+                loadReviewPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextReviewBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentReviewPage').value);
+            const maxPage = parseInt(document.getElementById('maxReviewPage').value);
+            if (currentPage < maxPage) {
+                loadReviewPage(currentPage + 1);
+            }
+        });
+
+        document.getElementById('prevCommentBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentCommentPage').value);
+            if (currentPage > 1) {
+                loadCommentPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('nextCommentBtn').addEventListener('click', function () {
+            const currentPage = parseInt(document.getElementById('currentCommentPage').value);
+            const maxPage = parseInt(document.getElementById('maxCommentPage').value);
+            if (currentPage < maxPage) {
+                loadCommentPage(currentPage + 1);
+            }
+        });
+    });
+
+    function loadReviewPage(pageNumber) {
+        const mseq = document.getElementById('mseq').value;
+        fetch(`/review/memberReviewList/${mseq}?page=${pageNumber}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('reviewList').innerHTML = data.reviewListHtml;
+                document.getElementById('currentReviewPage').value = data.currentPage;
+                document.getElementById('maxReviewPage').value = data.maxPage;
+
+                updatePagination('reviewPagination', data.currentPage, data.maxPage, loadReviewPage);
+            })
+            .catch(error => {
+                console.error('Error fetching review data:', error);
+                alert('리뷰 목록을 불러오는 중 오류가 발생했습니다.');
+            });
+    }
+
+    function loadCommentPage(pageNumber) {
+        const mseq = document.getElementById('mseq').value;
+        fetch(`/review/memberCommentList/${mseq}?page=${pageNumber}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('commentList').innerHTML = data.commentListHtml;
+                document.getElementById('currentCommentPage').value = data.currentPage;
+                document.getElementById('maxCommentPage').value = data.maxPage;
+
+                updatePagination('commentPagination', data.currentPage, data.maxPage, loadCommentPage);
+            })
+            .catch(error => {
+                console.error('Error fetching comment data:', error);
+                alert('댓글 목록을 불러오는 중 오류가 발생했습니다.');
+            });
+    }
+
+    function updatePagination(paginationId, currentPage, maxPage, loadPageFunction) {
+        const paginationDiv = document.getElementById(paginationId);
+        paginationDiv.innerHTML = '';
+
+        const displayRange = 3;
+
+        let startPage = currentPage - displayRange;
+        let endPage = currentPage + displayRange;
+        if (startPage < 1) {
+            startPage = 1;
+            endPage = Math.min(startPage + displayRange * 2, maxPage);
+        }
+        if (endPage > maxPage) {
+            endPage = maxPage;
+            startPage = Math.max(endPage - displayRange * 2, 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('span');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-number');
+
+            if (i === currentPage) {
+                pageButton.classList.add('current');
+            }
+
+            pageButton.addEventListener('click', function () {
+                loadPageFunction(i);
+            });
+
+            paginationDiv.appendChild(pageButton);
+        }
+    }
+</script>
+</body>
+</html>

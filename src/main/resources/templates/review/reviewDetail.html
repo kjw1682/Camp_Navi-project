@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"
+            integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
+            crossorigin="anonymous"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<th:block th:insert="/insert/header"></th:block>
+
+<article class="box centerBox review-box" id="review-detail-box">
+    <div class="container">
+        <h2 class="mb-4" th:text="${reviewVo.review.camp.getName()} + '리뷰'"></h2>
+        <hr class="vertical">
+        <div class="card webkit">
+            <div class="card-header">
+                <h3 th:text="${reviewVo.review.title}">제목</h3>
+            </div>
+            <hr>
+            <div class="card-body">
+                <div class="info">
+                    <div class="space-between">
+                        <div class="space-between-flex">
+                            캠핑장 : <a
+                                th:href="'/camp/detail/?mapX=' + ${reviewVo.review.camp.mapX} +'&mapY='+ ${reviewVo.review.camp.mapY}+'&contentId='+${reviewVo.review.camp.contentId}+ '&cseq='+${reviewVo.review.camp.cseq}">
+                            <span th:text="${reviewVo.review.camp.getName()}">캠핑장명</span></a>
+                        </div>
+                        <div class="buttonContain space-between-flex">
+                            리뷰 평점 :
+                            <p class="campingGrade margin0">
+                                <th:block th:with="starScore=${starScore}">
+                            <span class="satisfaction" th:alt="${starScore}" th:title="${starScore}">
+                                <th:block th:if="${starScore < 0.5}">
+                                    <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 0.5 and starScore < 1.0}">
+                                    <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 1.0}">
+                                    <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+                                </th:block>
+
+                                <th:block th:if="${starScore < 1.5}">
+                                    <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 1.5 and starScore < 2.0}">
+                                    <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 2.0}">
+                                    <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+                                </th:block>
+
+                                <th:block th:if="${starScore < 2.5}">
+                                    <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 2.5 and starScore < 3.0}">
+                                    <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 3.0}">
+                                    <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+                                </th:block>
+
+                                <th:block th:if="${starScore < 3.5}">
+                                    <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 3.5 and starScore < 4.0}">
+                                    <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 4.0}">
+                                    <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+                                </th:block>
+
+                                <th:block th:if="${starScore < 4.5}">
+                                    <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 4.5 and starScore < 5.0}">
+                                    <img alt="star-half" class="star" src="/assets/images/icon/star-half.png">
+                                </th:block>
+                                <th:block th:if="${starScore >= 5.0}">
+                                    <img alt="star-full" class="star" src="/assets/images/icon/star-full.png">
+                                </th:block>
+                            </span>
+                                </th:block>
+                            </p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="space-between">
+                        <div class="space-between-flex">
+                            <input name="vseq" th:value="${reviewVo.review.vseq}" type="hidden">
+                            작성자: <span
+                                th:text="${reviewVo.review.member.nickname + '(' + reviewVo.review.member.username + ')'}">작성자명</span>
+
+                        </div>
+                        <div class="space-between-flex">
+                            작성일시: <span
+                                th:text="${#dates.format(reviewVo.review.createdAt, 'yyyy-MM-dd HH:mm:ss')}">날짜시간</span>
+                        </div>
+                        <div class="space-between-flex">
+                            조회수: <span th:text="${reviewVo.review.count}+1">조회수</span>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+
+                <p class="content" id="content" th:utext="${reviewVo.review.content}">내용</p>
+
+
+                <hr>
+                <div class="buttonContain button-full">
+                    <!-- 작성자만 수정 및 삭제 버튼을 볼 수 있도록 -->
+                    <a class="webkit"
+                       th:href="@{'/review/edit_form/' + ${reviewVo.review.vseq}}"
+                       th:if="${isAuthor}">
+                        <button class="webkit">수정하기</button>
+                    </a>
+                    <!-- 목록으로 돌아가기 -->
+                    <a class="button webkit" id="goBack">
+                        <button class="webkit">목록보기</button>
+                    </a>
+                    <form class="webkit"
+                          method="post" th:action="@{'/review/delete/' + ${reviewVo.review.vseq}}" th:if="${isAuthor}">
+                        <button class="webkit mainBtn" onclick="return confirmDelete()" type="submit">삭제하기</button>
+                    </form>
+                </div>
+                <hr>
+
+                <div class="like-button-container">
+                    <a class="fa fa-thumbs-up like-button" onclick="likePost()">
+                        <span id="likeCount">[[${reviewVo.rcdCount}]]</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--찜하기 버튼-->
+    <div class="width-center">
+        <input class="saveInput" th:checked="${recommendChecked}" th:id="'saveBtn-' + ${reviewVo.review.vseq}"
+               th:name="'saveBtn-' + ${reviewVo.review.vseq}" type="hidden"/>
+        <label class="saveLabel" id="saveLabel" th:data-vseq="${reviewVo.review.vseq}"
+               th:for="'saveBtn-' + ${reviewVo.review.vseq}">
+            <img alt=""
+                 class="saveBtn saveBtnImg reviewDetail-save-img"
+                 th:src="${recommendChecked ? '/assets/images/icon/like-full.png' : '/assets/images/icon/like-empty.png'}">
+        </label>
+    </div>
+
+    <th:block th:insert="~{/review/reviewComments}"></th:block>
+
+    <hr class="vertical">
+    <!--작성자의 최신글 목록 -->
+    <div th:if="${authorList}">
+        <h3><span th:text="${reviewVo.review.member.nickname}"></span>님의 최신글 더보기</h3>
+
+
+        <div class="reviewDetail-box">
+            <div th:each="author, iterStat : ${authorList}" th:if="${iterStat.index < 3}">
+                <a class="nextContent" th:href="@{'/review/detail/' + ${author.review.vseq}}"
+                   th:text="${#strings.abbreviate(author.review.title, 50)}"></a>
+                <input id="vseq" name="vseq" th:value="${author.review.vseq}" type="hidden"/>
+            </div>
+        </div>
+    </div>
+
+</article>
+<!-- 찜하기 기능 스크립트 -->
+<script>
+
+    document.getElementById('goBack').addEventListener('click', function () {
+        history.go(-1);
+    })
+
+    document.querySelectorAll('.saveLabel').forEach(label => {
+        label.addEventListener('click', function (event) {
+            event.preventDefault(); // 기본 동작 방지
+
+            const vseq = document.getElementById('vseq').value;
+            const checkbox = document.getElementById('saveBtn-' + vseq);
+            let isChecked = checkbox.checked;
+
+            // isChecked 변수는 checkbox의 현재 상태를 나타냅니다.
+            // 예시로, isChecked가 true인 경우는 찜 상태를 나타내며, false인 경우는 찜 해제 상태를 나타냅니다.
+
+            if (isChecked === false) { // 현재 체크가 되지 않은 상태인 경우
+                if (confirm("캠핑장리뷰를 추천하시겠습니까?")) {
+                    fetch('/review/recommend/' + vseq, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            checkbox.checked = true; // checkbox를 체크 상태로 변경
+                            this.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png'; // 이미지 변경
+                            alert("캠핑장리뷰가 추천되었습니다.")
+                        } else {
+                            alert("캠핑장리뷰 추천하기에 실패했습니다.");
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert("캠핑장리뷰 추천하기에 실패했습니다.");
+                    });
+                }
+            } else if (isChecked === true) { // 현재 체크된 상태인 경우
+                if (confirm("캠핑장리뷰 추천하기를 취소하시겠습니까?")) {
+                    fetch('/review/recommend/delete/' + vseq, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            checkbox.checked = false; // checkbox를 체크 해제 상태로 변경
+                            this.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png'; // 이미지 변경
+                            alert("캠핑장리뷰 추천이 취소되었습니다.")
+                        } else {
+                            response.text().then(text => {
+                                console.error('Failed to remove from jjim list:', text);
+                                alert("캠핑장리뷰 추천 취소에 실패하였습니다." + text);
+                            });
+                        }
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        alert("캠핑장리뷰 추천 취소에 실패하였습니다.");
+                    });
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    function confirmDelete() {
+        return confirm("게시글을 삭제하시겠습니까?");
+    }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"
+        type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"
+        type="text/javascript"></script>
+
+
+<th:block th:insert="/insert/footer"></th:block>
+</body>
+</html>

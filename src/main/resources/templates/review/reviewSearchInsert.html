@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html" lang="ko">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+
+    <!-- summernote -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+    <link href="/assets/summernote/css/summernote-lite-darkly.css" rel="stylesheet">
+    <title>CampNavi</title>
+</head>
+
+<body>
+
+<th:block th:insert="insert/header.html"></th:block>
+
+<article class="box centerBox review-box">
+    <form name="form" id="form" method="post" enctype="multipart/form-data" action="/review/search/insert">
+
+        <h2 class="review-title">캠핑장 리뷰 작성</h2>
+        <hr>
+
+        <div class="review-insert-title">캠핑장 이름</div>
+        <input class="webkit review-insert-input" type="text" id="camp" name="camp">
+
+        <!-- 후보 캠핑장 이름 표시를 위한 영역 -->
+        <div id="campCandidates" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
+
+        <hr>
+        <div>
+            <div class="review-insert-title">Title (최대 50자)</div>
+            <input class="webkit review-insert-input" type="text" id="title" name="title" maxlength="50">
+            <div id="title-char-count" style="font-size: 12px; color: gray;">1 / 50</div>
+        </div>
+        <hr>
+        <div class="buttonContain">
+            <div class="review-insert-title review-insert-margin-right review-insert-rating-title">평점</div>
+            <div id="rating_area"></div>
+        </div>
+        <hr>
+        <div class="post-form">
+            <textarea id="summernote" name="content"></textarea>
+        </div>
+        <div class="buttonContain review-topMargin">
+            <button type="button" class="mainBtn" onclick="review_write()">게시글 등록</button>
+            <button type="button" onclick="window.location.href='/review/list'" class="button">돌아가기</button>
+        </div>
+    </form>
+</article>
+
+<footer id="footer">
+    <p class="copyright">&copy; Team Navigation. </p>
+</footer>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="/assets/summernote/js/summernote-lite.js"></script>
+<script src="/assets/summernote/lang/summernote-ko-KR.js"></script>
+<script>
+    $(document).ready(function () {
+        reloadRating(5.0, 0);
+        $('#summernote').summernote({
+            height: 300,
+            minHeight: 500,
+            maxHeight: 500,
+            lang: "ko-KR",
+            focus: true,
+            theme: 'darkly',
+            toolbar: [
+                ['fontname', ['fontname']],
+                ['fontsize', ['fontsize']],
+                ['style', ['bold', 'italic', 'underline', 'strikethrough', 'clear']],
+                ['table', ['table']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['insert', ['link', 'picture', 'video']],
+            ],
+            fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', '맑은 고딕', '궁서', '굴림체', '굴림', '돋음체', '바탕체'],
+
+            callbacks: {
+                onImageUpload: function (files) {
+                    uploadSummernoteImageFile(files[0], this);
+                    alert("이미지가 추가되었습니다.")
+                }
+            }
+        });
+
+        // 캠핑장 입력 시 후보 목록 업데이트
+        $('#camp').on('input', function() {
+            var keyword = $(this).val().trim();
+            if (keyword.length >= 1) {
+                updateCampCandidates(keyword);
+            } else {
+                $('#campCandidates').empty(); // 입력이 없으면 후보 목록 비우기
+            }
+        });
+
+        // 후보 캠핑장 클릭 시 입력창에 채우기
+        $(document).on('click', '#campCandidates div', function() {
+            var campName = $(this).text().trim();
+            $('#camp').val(campName);
+            $('#campCandidates').empty(); // 후보 목록 비우기
+        });
+
+        // 다른 곳으로 포커스 이동 시 후보 목록 비우고 유효성 검사
+        $('body').on('click keypress', function(event) {
+            // 엔터 키 코드는 13입니다.
+            if (event.type === 'keypress' && event.which === 13) {
+                event.preventDefault(); // 엔터 키의 기본 동작(폼 제출)을 막습니다.
+            }
+
+            var $target = $(event.target);
+            if (!$target.closest('#campCandidates').length && !$target.is('#camp')) {
+                var campInput = $('#camp').val().trim();
+                if (campInput.length > 0) {
+                    checkCampValidity(campInput);
+                }
+                $('#campCandidates').empty(); // 후보 목록 비우기
+            }
+        });
+
+        // 제목 입력 시 글자 수 업데이트
+        $('#title').on('input', function() {
+            var charCount = $(this).val().length;
+            $('#title-char-count').text(charCount + ' / 50');
+        });
+
+        // 유효성 검사 함수
+        function checkCampValidity(campName) {
+            $.ajax({
+                url: "/camp/api/validate", // 서버 측 API 엔드포인트
+                type: "GET",
+                data: {
+                    campName: campName
+                },
+                success: function(response) {
+                    if (response.valid) {
+                        // 유효한 캠핑장 이름일 때의 처리
+                    } else {
+                        alert("캠핑장이 존재하지 않습니다.");
+                        $('#camp').val('');
+                        $('#camp').focus(); // 다시 입력창에 포커스 주기
+                    }
+                },
+                error: function() {
+                    alert("서버와의 통신 중 문제가 발생했습니다.");
+                }
+            });
+        }
+
+        // 캠핑장 후보 목록 업데이트 함수
+        function updateCampCandidates(keyword) {
+            $.ajax({
+                url: "/camp/api/search", // 서버 측 API 엔드포인트
+                type: "GET",
+                data: {
+                    keyword: keyword
+                },
+                success: function(data) {
+                    displayCampCandidates(data);
+                },
+                error: function() {
+                    alert("캠핑장 후보 목록을 가져오는 데 실패했습니다.");
+                }
+            });
+        }
+
+        // 캠핑장 후보 목록 표시 함수
+        function displayCampCandidates(camps) {
+            var html = '';
+            camps.forEach(function(camp) {
+                html += '<div>' + camp.name + '</div>';
+            });
+            $('#campCandidates').html(html);
+        }
+    });
+
+    function uploadSummernoteImageFile(file, editor) {
+        var formData = new FormData();
+        formData.append("file", file);
+
+        $.ajax({
+            url: "/uploadSummernoteImageFile",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.startsWith("/upload/")) {
+                    // 이미지 업로드 성공 시
+                    console.log(response);
+                    $(editor).summernote('editor.insertImage', response);
+                    alert("이미지 업로드 성공");
+                } else {
+                    // 이미지 업로드 실패 시
+                    alert("이미지 업로드 실패");
+                }
+            },
+            error: function() {
+                // AJAX 호출 실패 시
+                alert("이미지 업로드 중 오류 발생");
+            }
+        });
+    }
+
+    function reloadRating(current, index) {
+        $.ajax({
+            type: "POST",
+            url: "/review/reloadRating",
+            data: {
+                current: current,
+                index: index
+            },
+            success: function(data) {
+                let starScore = data.starScore;
+                HTML = "";
+                HTML += "<input type=\"hidden\" name=\"likes\" id=\"likes\" value=" + starScore + ">";
+                HTML += "<span class=\"satisfaction\" title=\""+starScore+"\" alt=\""+starScore+"\">";
+                if (starScore < 0.5) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 1); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-empty.png\"></a>";
+                } else if (starScore < 1.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 1); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-half.png\"></a>";
+                } else if (starScore >= 1.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 1); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-full.png\"></a>";
+                }
+
+                if (starScore < 1.5) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 2); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-empty.png\"></a>";
+                } else if (starScore < 2.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 2); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-half.png\"></a>";
+                } else if (starScore >= 2.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 2); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-full.png\"></a>";
+                }
+
+                if (starScore < 2.5) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 3); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-empty.png\"></a>";
+                } else if (starScore < 3.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 3); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-half.png\"></a>";
+                } else if (starScore >= 3.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 3); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-full.png\"></a>";
+                }
+
+                if (starScore < 3.5) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 4); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-empty.png\"></a>";
+                } else if (starScore < 4.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 4); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-half.png\"></a>";
+                } else if (starScore >= 4.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 4); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-full.png\"></a>";
+                }
+
+                if (starScore < 4.5) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 5); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-empty.png\"></a>";
+                } else if (starScore < 5.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 5); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-half.png\"></a>";
+                } else if (starScore >= 5.0) {
+                    HTML += "<a href=\"\" onclick=\"reloadRating(" + starScore + ", 5); return false;\"><img class=\"star\" src=\"/assets/images/icon/star-full.png\"></a>";
+                }
+                HTML += "</span>";
+                $("#rating_area").html(HTML);
+            },
+            error: function() {
+                alert("평점 출력 실패");
+            }
+        });
+    }
+
+    function review_write() {
+        if ($("#camp").val().length == 0) {
+            alert("캠핑장 이름을 입력해 주세요.")
+            $("#camp").focus();
+        } else if ($("#summernote").summernote('isEmpty'))
+            alert("리뷰 내용을 입력해 주세요.")
+        else {
+            $("#form").submit();
+        }
+    }
+</script>
+
+<div id="bg"></div>
+
+</body>
+</html>

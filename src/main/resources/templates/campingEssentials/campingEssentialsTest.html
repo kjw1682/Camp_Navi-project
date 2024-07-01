@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CAMPING ESSENTIALS ITEMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .icons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .icon {
+            background-color: #fff;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .icon:hover {
+            transform: scale(1.05);
+        }
+
+        .icon img {
+            max-width: 100px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .details {
+            background-color: #fff;
+            padding: 20px;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            text-align: center;
+        }
+
+        .details h3 {
+            margin: 0;
+        }
+
+        .details p {
+            margin: 5px 0;
+            white-space: pre-line; /* Preserves whitespace and line breaks */
+        }
+
+        .details a {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 120px;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .details a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function showDetails(name, description, link) {
+            document.getElementById('itemName').innerText = name;
+            document.getElementById('itemDescription').innerHTML = description; // Use innerHTML to handle HTML content
+            document.getElementById('itemLink').href = link;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var icons = document.querySelectorAll('.icon');
+            icons.forEach(function(icon) {
+                icon.addEventListener('click', function() {
+                    var name = this.getAttribute('data-name');
+                    var description = this.getAttribute('data-description');
+                    var link = this.getAttribute('data-link');
+                    showDetails(name, description, link);
+                });
+            });
+
+            // Display first item details by default
+            if (icons.length > 0) {
+                var firstIcon = icons[0];
+                var name = firstIcon.getAttribute('data-name');
+                var description = firstIcon.getAttribute('data-description');
+                var link = firstIcon.getAttribute('data-link');
+                showDetails(name, description, link);
+            }
+        });
+    </script>
+</head>
+<body>
+<h1>CAMPING ESSENTIALS ITEMS</h1>
+<div class="container">
+    <div class="icons">
+        <div class="icon" th:each="product : ${products}"
+             th:data-name="${product.name}"
+             th:data-description="${product.description}"
+             th:data-link="${product.shoppingLink}">
+            <img th:src="@{${product.imageUrl}}" alt="Product Image">
+            <p th:text="${product.name}"></p>
+        </div>
+    </div>
+    <div class="details">
+        <h3 id="itemName">제품 이름</h3>
+        <p id="itemDescription">제품 설명</p>
+        <a id="itemLink" href="#" target="_blank">쇼핑하러 가기</a>
+    </div>
+</div>
+</body>
+</html>

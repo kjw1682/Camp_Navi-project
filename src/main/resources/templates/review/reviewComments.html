@@ -1,0 +1,268 @@
+<!-- 댓글 영역 -->
+<div class="container">
+    <form id="commentForm" name="commentForm" method="post">
+        <br> <br>
+        <div>
+            <div>
+                <span><h3>comments</h3></span> <span id="Cnt"></span>
+            </div>
+            <div id="reply">
+                <table id="rep_input" style="width: 650px">
+                    <tr>
+                        <td style="width: 80%;"><textarea rows="3" cols="75"
+                                                          id="CommentContent" name="CommentContent"
+                                                          placeholder="댓글을 입력하세요"></textarea>
+                        </td>
+                        <td style="width: 10%;"><a href='#'
+                                                   onClick="save_comment(); return false;"
+                                                   class="btn">등록</a></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <input type="hidden" id="vseq" name="vseq" th:value="${reviewVo.review.vseq}"/>
+    </form>
+</div>
+<div class="container">
+    <form id="commentListForm" name="commentListForm" method="get">
+
+        <div id="commentList">
+            <!--  댓글 출력 영역 -->
+        </div>
+    </form>
+
+
+    <!-- 페이지 처리 영역 -->
+    <div>
+        <ul id="pagination">
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function () {
+	getCommentsAndCurrentMember();
+});
+
+    // getCommentsAndCurrentMember 함수 정의
+    function getCommentsAndCurrentMember() {
+        var vseq = $("#vseq").val(); // vseq 값을 가져오기
+
+        $.ajax({
+            type: 'GET',
+            url: '/review/comment/list',
+            dataType: 'json',
+            data: {vseq: vseq},
+            success: function (data) {
+                var loginMember = data.currentMember;
+                var commentCount = data.commentCount;
+                var parentCommentCmseqArray = data.parentCommentCmseqArray;
+                var parentCommentMseqArray = data.parentCommentMseqArray;
+                var parentCommentMemberArray = data.parentCommentMemberArray;
+                var parentCommentContentArray = data.parentCommentContentArray;
+                var parentCommentDateArray = data.parentCommentDateArray;
+                var childCommentCmseqArray = data.childCommentCmseqArray;
+                var childCommentMseqArray = data.childCommentMseqArray;
+                var childCommentMemberArray = data.childCommentMemberArray;
+                var childCommentContentArray = data.childCommentContentArray;
+                var childCommentDateArray = data.childCommentDateArray;
+
+                // 가져온 댓글 목록과 사용자 정보를 이용하여 화면에 표시
+                showHTML(loginMember, vseq, commentCount, parentCommentCmseqArray, parentCommentMseqArray, parentCommentMemberArray, parentCommentContentArray, parentCommentDateArray, childCommentCmseqArray, childCommentMseqArray, childCommentMemberArray, childCommentContentArray, childCommentDateArray);
+
+            },
+            error: function () {
+                alert("댓글 목록을 조회하지 못했습니다.");
+            }
+        });
+
+    }
+
+// 대댓글 폼 토글 함수
+function toggleReplyForm(cmseq, vseq) {
+    $("#replyForm_" + cmseq + "_" + vseq).toggle(); // 대댓글 폼 토글
+}
+
+function showHTML(loginMember, vseq, commentCount, parentCommentCmseqArray, parentCommentMseqArray, parentCommentMemberArray, parentCommentContentArray, parentCommentDateArray, childCommentCmseqArray, childCommentMseqArray, childCommentMemberArray, childCommentContentArray, childCommentDateArray) {
+    var html = "";
+    if (parentCommentCmseqArray.length > 0) {
+        for (let i = 0 ; i < parentCommentCmseqArray.length ; i++) {
+        	// 부모 댓글 섹션
+        	html += "<div id=\"parent_comment_" + parentCommentCmseqArray[i] + "\">"; // 각 부모 댓글에 대해 고유한 id 부여
+            html += "<strong>작성자: " + parentCommentMemberArray[i] + "</strong>&nbsp;&nbsp;&nbsp; ";
+            html += "<span id=\"write_date\"> 작성일: " + displayTime(parentCommentDateArray[i]) + "</span><br>";
+            html += parentCommentContentArray[i];
+
+         	// 각 부모 댓글에 대한 답글 작성 버튼	
+            html += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick=\"toggleReplyForm(" + parentCommentCmseqArray[i] + ", " + vseq + "); return false\">답글 작성</a>";
+    	     // 현재 사용자의 댓글인 경우 삭제 버튼 표시
+            if (parentCommentMseqArray[i] === loginMember) {
+                html += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick=\"deleteComment(" + parentCommentCmseqArray[i] + "," + loginMember + "); return false\" class='button' id='commentsDel'>삭제</a>";
+            }
+         
+	         // 대댓글 폼
+            html += "<div id=\"replyForm_" + parentCommentCmseqArray[i] + "_" + vseq + "\" style=\"display:none;\">"; // 대댓글 폼의 기본적인 HTML을 추가하고 숨김 처리
+            html += "<textarea rows=\"3\" cols=\"50\" id=\"ReplyContent_" + parentCommentCmseqArray[i] + "_" + vseq + "\" name=\"ReplyContent\" placeholder=\"답글을 입력하세요\"></textarea>";
+            html += "<a href=\"#\" onClick=\"save_reply(" + parentCommentCmseqArray[i] + "," + vseq + "); return false;\" class=\"btn\">등록</a>"; // 대댓글 등록 버튼
+            html += "</div>";
+            
+         	// 자식 댓글 섹션
+            if (childCommentCmseqArray[i].length > 0) {
+            	for (let j = 0 ; j < childCommentCmseqArray[i].length ; j++) {
+            		html += "<div id=\"child_comment_" + childCommentCmseqArray[i][j] + "\">"; // 각 자식 댓글에 대해 고유한 id 부여
+            		html += "&nbsp;&nbsp;&nbsp;&nbsp;<strong>작성자: " + childCommentMemberArray[i][j] + "</strong>&nbsp;&nbsp;&nbsp; ";
+                    html += "&nbsp;&nbsp;&nbsp;&nbsp;<span id=\"write_date\"> 작성일: " + displayTime(childCommentDateArray[i][j]) + "</span><br>";
+                    html += "&nbsp;&nbsp;&nbsp;&nbsp;<span>"+ childCommentContentArray[i][j] +"</span>";
+                 	// 현재 사용자의 댓글인 경우 삭제 버튼 표시
+                    if (childCommentMseqArray[i][j] === loginMember) {
+                        html += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='#' onclick=\"deleteComment(" + childCommentCmseqArray[i][j] + "," + loginMember + "); return false\" class='button' id='commentsDel'>삭제</a>";
+                    }
+                    html += "<br></div>";
+            	}
+            }
+        }
+    } else {
+        html += "<div>";
+        html += "<h3>등록된 댓글이 없습니다.</h3>";
+        html += "</div>";
+    }
+
+    $("#Cnt").html("댓글 " + "<span style='color;#00f;'>" + commentCount + "</span>");
+    $("#commentList").html(html); /* 브라우저에 출력 */
+}
+
+
+
+/*
+ ** 입력 파라미터:
+ **     timeValue - 상품평 등록 시간
+ */
+    function displayTime(timeValue) {
+        var today = new Date();
+
+        // timeValue를 Date객체로 변환
+        var dateObj = new Date(timeValue);
+
+        console.log("timeValue=" + timeValue);
+        console.log("dateObj=" + dateObj);
+
+        var timeGap = today.getTime() - dateObj.getTime();
+
+        // 오늘 작성된 것은 작성시각으로, 그 외는 작성일자로 표시
+        if (dateObj.getFullYear() == today.getFullYear() && dateObj.getMonth() == today.getMonth() && dateObj.getDate() == today.getDate()) {
+            // timeGap이 24시간 이내인지 판단
+            //if (timeGap < (1000 * 60 * 60 * 24)) {  // 시, 분, 초를 구함
+            var hh = dateObj.getHours();
+            var mi = dateObj.getMinutes();
+            var ss = dateObj.getSeconds();
+            console.log("hh=" + hh);
+            console.log("mi=" + mi);
+            console.log("ss=" + ss);
+
+            //return hh + ':' + mi + ':' + ss;
+            return [(hh > 9 ? '' : '0') + hh, ':', (mi > 9 ? '' : '0') + mi, ':',
+                (ss > 9 ? '' : '0') + ss].join('');
+        } else {
+            var yy = dateObj.getFullYear();
+            var mm = dateObj.getMonth() + 1;
+            var dd = dateObj.getDate();
+
+            //return yy + "-" + mm + "-" + dd;
+            return [yy, '/', (mm > 9 ? '' : '0') + mm, '/', (dd > 9 ? '' : '0') + dd].join('');
+        }
+
+    }
+
+    /*
+     **댓글 등록
+     */
+
+     function save_comment() {
+    	    // 댓글 등록 요청
+    	    $.ajax({
+    	        type: 'POST',
+    	        url: '/review/comment/save',
+    	        dataType: 'json',
+    	        data: $("#commentForm").serialize(),
+    	        success: function(data) {
+    	            var result = data.result;
+    	            if (result == 'success') { // 댓글 등록 성공
+						$("#CommentContent").val(""); // 댓글 입력 창 비우기
+    	                getCommentsAndCurrentMember(); // 댓글 목록 호출
+
+    	            } else if (result == 'fail') {
+    	                alert("댓글 등록이 실패하였습니다. 다시 시도해 주세요");
+    	            } else if (result == 'not_logedin') {
+    	                alert("댓글 등록은 로그인이 필요합니다.");
+    	            }
+    	        },
+    	        error: function(jqXHR, textStatus, errorThrown) {
+    	            alert("댓글 등록 중 오류가 발생하였습니다: " + errorThrown);
+    	        }
+    	    });
+    	}
+
+function save_reply(cmseq, vseq) {
+    // 대댓글 폼의 내용을 가져옵니다.
+    var replyContent = $("#ReplyContent_" + cmseq + "_" + vseq).val();
+
+    // 대댓글을 등록하기 위한 데이터를 준비합니다.
+    var formData = {
+        cmseq: cmseq, // 부모 댓글의 ID
+        vseq: vseq, // 게시물의 ID
+        ReplyContent: replyContent // 대댓글 내용
+    };
+
+    // 대댓글 등록 요청
+    $.ajax({
+        type: 'POST',
+        url: '/review/comment/rplSave',
+        dataType: 'json',
+        data: formData, // 데이터 전송
+        success: function(data) {
+            var result = data.result;
+            if (result == 'success') {
+                $("#ReplyContent_" + cmseq + "_" + vseq).val(""); // 대댓글 입력창 비우기
+                getCommentsAndCurrentMember(); // 댓글 목록 새로고침
+            } else if (result == 'fail') {
+                alert("댓글 등록이 실패하였습니다. 다시 시도해 주세요");
+            } else if (result == 'not_logedin') {
+                alert("댓글 등록은 로그인이 필요합니다.");
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert("댓글 등록 중 오류가 발생하였습니다: " + errorThrown);
+        }
+    });
+}
+
+
+
+function deleteComment(cmseq, loginMember) {
+    if (confirm("댓글을 삭제하시겠습니까?")) {
+        $.ajax({
+            type: 'POST',
+            url: '/review/comment/delete',
+            dataType: 'json',
+            data: {
+                cmseq: cmseq,
+                loginMember: loginMember
+            },
+            contentType: 'application/x-www-form-urlencoded; charset=utf-8',
+            success: function (data) {
+                if (data.result == 'success') {
+                    getCommentsAndCurrentMember(); // 댓글 목록 새로고침
+                } else {
+                    alert("댓글 삭제에 실패했습니다.");
+                }
+            },
+            error: function (request, status, error) {
+                alert("댓글 삭제 중 오류가 발생했습니다.");
+            }
+        });
+    }
+}
+
+
+
+</script>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/mainBG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<body>
+<div class="centerBox">
+    <a href="/member/login"><img id="user-search-logo" src="/assets/images/logo/typo.png"></a>
+    <div class="box" id="user-search-box">
+        <h2 class="major">아이디 찾기</h2>
+        <form action="/member/search/username" method="post">
+                <input class="webkit" id="user-search-name" name="name" placeholder="이름" type="text">
+                <input class="webkit" id="user-search-email" name="email" placeholder="이메일" type="text">
+                <input class="webkit" id="user-search-phone" name="phone" placeholder="전화번호" type="tel">
+
+
+                <div id="user-search-birth">
+                    <div id="user-search-birth-title">생년월일</div>
+                    <input class="webkit" name="birth" type="date">
+                </div>
+
+                <div id="user-search-prov">
+                    <select class="webkit" name="provider">
+                        <option value="">로그인 유형</option>
+                        <option value="campingnavi">캠핑내비</option>
+                        <option value="google">구글</option>
+                        <option value="naver">네이버</option>
+                        <option value="kakao">카카오</option>
+                        <option value="facebook">페이스북</option>
+                    </select>
+                </div>
+                <button class="mainBtn webkit" type="submit">전송</button>
+        </form>
+        <input id="username" th:if="${username != null}" th:value="${username}" type="hidden">
+    </div>
+</div>
+<div id="bg"></div>
+<script>
+    var username = $("#username").val();
+    if (username != null) {
+        alert("찾으시는 아이디는 " + username + " 입니다.");
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<body>
+<th:block th:insert="insert/header.html"></th:block>
+<input name="memberName" th:value="${member.name}" type="hidden"/>
+<input name="memberMseq" th:value="${member.mseq}" type="hidden"/>
+<input name="comuCamp" th:value="${comuCamp}" type="hidden"/>
+<div id="app">
+    <article class="box centerBox" id="chatRoomBox">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 chatRoomBox" v-bind:key="item.chatRoom.roomId" v-for="item in chatrooms"
+                     v-on:click="enterRoom(item.chatRoom.roomId)">
+                    <ul class="list-group">
+                        <li class="listChat">
+                            <div class="buttonContain">
+                                <h1 class="campingNameChat">{{item.chatRoom.campName}}</h1>
+                                <div class="lengthContain" id="chatGradeMember">
+                                <span class="chatGrade">
+                                    <span class="satisfaction-room" v-alt="item.score" v-title="item.score">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png"
+                                             v-if="item.score < 0.5">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-half.png"
+                                             v-if="item.score >= 0.5 && item.score < 1.0">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-full.png"
+                                             v-if="item.score >= 1.0">
+
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png"
+                                             v-if="item.score < 1.5">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-half.png"
+                                             v-if="item.score >= 1.5 && item.score < 2.0">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-full.png"
+                                             v-if="item.score >= 2.0">
+
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png"
+                                             v-if="item.score < 2.5">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-half.png"
+                                             v-if="item.score >= 2.5 && item.score < 3.0">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-full.png"
+                                             v-if="item.score >= 3.0">
+
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png"
+                                             v-if="item.score < 3.5">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-half.png"
+                                             v-if="item.score >= 3.5 && item.score < 4.0">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-full.png"
+                                             v-if="item.score >= 4.0">
+
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-empty.png"
+                                             v-if="item.score < 4.5">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-half.png"
+                                             v-if="item.score >= 4.5 && item.score < 5.0">
+                                        <img alt="star-empty" class="star" src="/assets/images/icon/star-full.png"
+                                             v-if="item.score >= 5.0">
+                                    </span>
+                                </span>
+                                    <div class="buttonContain">
+                                        <img class="chatHumanIcon" src="/assets/images/icon/human.png">
+                                        <span class="chatGradeNum">{{item.scoreView}}점</span>
+                                        <span class="chatReviewNum">{{item.reviewCount}}개의 후기</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lengthContain">
+                                <div class="chatInfo">
+                                    <img class="calender" src="/assets/images/icon/calendar.png">
+                                    <div class="lengthContain">
+                                        <span class="chat-day">{{item.chatRoom.startDate}} - {{item.chatRoom.endDate}}</span>
+                                        <span class="chat-member">캠핑 모집 인원수 <span
+                                                class="chat-member-num">{{item.chatRoom.maxMem}}</span></span>
+                                    </div>
+                                </div>
+                                <div class="chatPurpose">
+                                    <div class="chatPurposeSee" v-for="purpose in item.chatRoom.purpose">
+                                        <img alt="dance" class="chatPurposeIcon" src="/assets/images/icon/dance.png"
+                                             v-if="purpose === '같이 놀아요!'">
+                                        <img alt="dogwith" class="chatPurposeIcon" src="/assets/images/icon/dogwith.png"
+                                             v-else-if="purpose === '애완동물과 함께해요!'">
+                                        <img alt="love" class="chatPurposeIcon" src="/assets/images/icon/love.png"
+                                             v-else-if="purpose === '만남을 원해요!'">
+                                        <img alt="parent" class="chatPurposeIcon" src="/assets/images/icon/parent.png"
+                                             v-else-if="purpose === '아이와 함께해요!'">
+                                        <img alt="campingHuman" class="chatPurposeIcon"
+                                             src="/assets/images/icon/campingHuman.png"
+                                             v-else-if="purpose === '조용히 쉬어요!'">
+                                        <span class="chatPurposeText">{{ purpose }}</span>
+                                    </div>
+                                </div>
+                                <div class="buttonContain chatRoomNameBox">
+                                    <span class="chatRoomName">{{item.chatRoom.name}}</span>
+                                    <!--채팅방 인원수-->
+                                    <span class="chatRoomPN">참여인원 : {{item.chatRoom.userCount}}</span>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </article>
+
+    <div class="input-group-append">
+        <button id="chatRoomSearchBtn" type="button">검색하기</button>
+    </div>
+    <div id="chatRoomSearch">
+        <div class="nonPaddingBox">
+            <div class="buttonContain" id="chatSearchName">
+                <input class="form-control" id="chatSearchBar" placeholder="방 이름을 입력해주세요" type="text"
+                       v-model="search_word">
+                <button class="chatRoomSearchBtn" id="chatSearchNameBtn" type="button" v-on:click="searchRoom()">검색
+                </button>
+            </div>
+            <div class="buttonContain" id="chatRoomBtnZ">
+                <button id="chatSearchPurposeListBtn" type="button">캠핑 목적</button>
+                <div class="input-group-append">
+                    <button class="mainBtn" id="createChatRoomBtn" type="button">채팅방 개설</button>
+                </div>
+            </div>
+            <div class="chatRoomPur">
+                <input id="chatPurpose1" name="chatPurpose" type="checkbox" v-model="purpose" value="같이 놀아요!">
+                <label for="chatPurpose1">
+                    <img alt="dance" class="chatPurposeIcon" src="/assets/images/icon/dance.png">
+                    같이 놀아요!
+                </label>
+                <input id="chatPurpose2" name="chatPurpose" type="checkbox" v-model="purpose" value="애완동물과 함께해요!">
+                <label for="chatPurpose2">
+                    <img alt="dogwith" class="chatPurposeIcon" src="/assets/images/icon/dogwith.png">
+                    애완동물과 함께해요!
+                </label>
+                <input id="chatPurpose3" name="chatPurpose" type="checkbox" v-model="purpose" value="만남을 원해요!">
+                <label for="chatPurpose3">
+                    <img alt="love" class="chatPurposeIcon" src="/assets/images/icon/love.png">
+                    만남을 원해요!
+                </label>
+                <input id="chatPurpose4" name="chatPurpose" type="checkbox" v-model="purpose" value="조용히 쉬어요!">
+                <label for="chatPurpose4">
+                    <img alt="campingHuman" class="chatPurposeIcon" src="/assets/images/icon/campingHuman.png">
+                    조용히 쉬어요!
+                </label>
+                <input id="chatPurpose5" name="chatPurpose" type="checkbox" v-model="purpose" value="아이와 함께해요!">
+                <label for="chatPurpose5">
+                    <img alt="parent" class="chatPurposeIcon" src="/assets/images/icon/parent.png">
+                    아이와 함께해요!
+                </label>
+            </div>
+        </div>
+    </div>
+    <!--참여중인 채팅 표시부분-->
+    <div class="box" id="chat-participation">
+        <h2 class="major">참여중인 채팅</h2>
+        <span class="chat-participation-room" v-for="list in myRoomList" v-on:click="enterRoom(list.roomId)">
+        {{ list.name }}
+        </span>
+    </div>
+</div>
+
+
+<th:block th:insert="insert/footer.html"></th:block>
+
+<!-- JavaScript -->
+<script crossorigin="anonymous"
+        integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+        referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script>
+    let memberName = $('input[name=memberName]').val();
+    let memberMseq = $('input[name=memberMseq]').val();
+    let comuCamp = $('input[name=comuCamp]').val();
+    let purpose = $('input[name=chatPurpose]');
+</script>
+<script>
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            room_name: '',
+            chatrooms: [],
+            start_date: '',
+
+            end_date: '',
+            max_mem: '',
+            purpose: [],
+            memberName: memberName,
+            camp_name: '',
+            comuCamp: comuCamp,
+            search_word: '',
+            memberMseq: memberMseq,
+            myRoomList: []
+
+
+        },
+        created() {
+            this.findAllRoom();
+            this.findMyRoomList();
+        },
+        methods: {
+            findAllRoom: function () {
+                let params = new URLSearchParams();
+                params.append("campName", comuCamp);
+                if (this.purpose.length > 0) {
+                    // purpose 배열을 문자열로 변환하여 전송
+                    params.append("purpose", this.purpose.join(','));
+                } else {
+                    // purpose 배열이 비어있으면 아무 값도 전송하지 않음
+                    params.append("purpose", ""); // 빈 문자열 또는 null로 설정할 수 있음
+                }
+                console.log(comuCamp + "rooms 로 캠프정보 전송");
+                console.log(purpose + "rooms 로 캠프목적 전송")
+                axios.get('/chat/rooms', {params: params}).then(response => {
+                    this.chatrooms = response.data;
+
+                });
+
+            },
+
+            createRoom: function () {
+                if ("" === this.room_name) {
+                    alert("방 제목을 입력해 주십시요.");
+                    return;
+                } else {
+                    let params = new URLSearchParams();
+                    params.append("name", this.room_name);
+                    axios.post('/chat/room', params)
+                        .then(
+                            response => {
+                                alert(response.data.name + "방 개설에 성공하였습니다.")
+                                this.room_name = '';
+                                this.findAllRoom();
+                            }
+                        )
+                        .catch(response => {
+                            alert("채팅방 개설에 실패하였습니다.");
+                        });
+                }
+            },
+            enterRoom: function (roomId) {
+                let mseq = memberMseq;
+                let params = new URLSearchParams();
+                params.append("roomId", roomId);
+                params.append("mseq", mseq)
+                axios.get('/chat/banCheck', {params: params})
+                    .then(
+                        response => {
+                            if (response.data.banned){
+                                alert("퇴장조치당한 방에는 다시 입장할 수 없습니다.")
+                                return;
+                            } else {
+                                let sender = prompt('대화명을 입력해 주세요.\n' + '대화명을 입력하지 않을 시 로그인하신정보( ' + memberName + ' ) 으로 입장합니다.');
+                                if (sender === null) {
+                                    alert('입장이 취소되었습니다.');
+                                    return;
+                                }
+                                if (sender != "") {
+                                    localStorage.setItem('wschat.sender', sender);
+                                    localStorage.setItem('wschat.roomId', roomId);
+                                    localStorage.setItem('wschat.mseq', mseq)
+                                    location.href = "/chat/room/enter/" + roomId;
+                                } else {
+                                    sender = memberName;
+                                    localStorage.setItem('wschat.sender', sender);
+                                    localStorage.setItem('wschat.roomId', roomId);
+                                    localStorage.setItem('wschat.mseq', mseq)
+                                    location.href = "/chat/room/enter/" + roomId;
+                                }
+                            }
+                        }
+                    )
+            },
+            searchRoom: function () {
+                comuCamp = this.search_word;
+                purpose = this.purpose;
+                this.findAllRoom();
+            },
+            findMyRoomList: function () {
+                axios.get("/chat/myList/" + memberMseq).then(
+                    response => {
+                        this.myRoomList = response.data;
+
+                    }
+                )
+
+
+            }
+
+        }
+    });
+
+    document.getElementById('createChatRoomBtn').addEventListener('click', function () {
+        location.href = "/chat/create";
+    });
+
+
+    document.getElementById('chatSearchPurposeListBtn').addEventListener('click', function () {
+        let chatRoomPur = document.querySelector('.chatRoomPur');
+        if (chatRoomPur.style.display === 'none' || chatRoomPur.style.display === '') {
+            chatRoomPur.style.display = 'block'; // 보이도록 설정합니다.
+        } else {
+            chatRoomPur.style.display = 'none'; // 숨깁니다.
+        }
+    });
+
+    document.getElementById('chatRoomSearchBtn').addEventListener('click', function () {
+        let chatRoomSearch = document.getElementById('chatRoomSearch');
+        if (chatRoomSearch.style.display === 'none' || chatRoomSearch.style.display === '') {
+            chatRoomSearch.style.display = 'block'; // 보이도록 설정합니다.
+        } else {
+            chatRoomSearch.style.display = 'none'; // 숨깁니다.
+        }
+    });
+
+    document.addEventListener('mousemove', function (e) {
+        var chatParticipation = document.getElementById('chat-participation');
+        var windowWidth = window.innerWidth;
+        var mouseX = e.clientX;
+
+        if (mouseX < windowWidth / 10) {
+            chatParticipation.classList.add('show');
+        } else {
+            chatParticipation.classList.remove('show');
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1937 @@
+/*Basic*/
+font {
+    color: rgb(27, 31, 34);
+    font-size: 15px;
+}
+
+input[type="text"], input[type="password"], input[type="number"], input[type="tel"], input[type="email"] {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 15px;
+    border-radius: 60px;
+    padding: 15px 15px 15px 15px;
+}
+
+a {
+    text-decoration: none;
+    color: rgb(27, 31, 34);
+}
+
+select {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 15px;
+    border-radius: 60px;
+    padding: 15px 15px 15px 15px;
+}
+
+label {
+    font-size: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    border-radius: 60px;
+    padding: 15px 15px 15px 15px;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[typ="radio"] {
+    display: none;
+}
+
+input[type="checkbox"]:checked + label {
+    background-color: #E58B33;
+    color: white;
+}
+
+input[type="radio"]:checked + label {
+    background-color: #E58B33;
+    color: white;
+}
+
+input[type="date"] {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 15px;
+    border-radius: 60px;
+    padding: 15px 15px 15px 15px;
+}
+
+input[type="number"] {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 15px;
+    border-radius: 60px;
+    padding: 15px 15px 15px 15px;
+
+}
+
+label:hover {
+    background-color: #dddddd;
+    border: 1px solid #afafaf;
+}
+
+li {
+    list-style-type: none;
+}
+
+.webkit {
+    width: -webkit-fill-available !important;
+}
+
+/*스크롤바*/
+
+/* 스크롤바의 전체 너비 */
+
+::-webkit-scrollbar {
+    width: 0;
+}
+
+/* 스크롤바의 트랙(바탕) */
+::-webkit-scrollbar-track {
+    background: none;
+}
+
+/* 스크롤바의 핸들(움직이는 부분) */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 1rem;
+}
+
+/* 스크롤바의 핸들을 호버(마우스 오버)했을 때 */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/*header*/
+
+.header {
+    position: relative;
+    /*display: none;*/
+    transition: all 0.4s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 9999;
+}
+
+.header.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#headerBox {
+    position: fixed;
+    top: 0;
+    width: -webkit-fill-available;
+    border-radius: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #E58B33;
+    z-index: 9999; /* 다른 요소들 위에 위치하도록 z-index 값을 높게 설정합니다. */
+    margin: 0 !important;
+}
+
+.headerNavigator {
+    display: flex;
+    justify-content: space-between;
+}
+
+.logo {
+    width: 180px;
+}
+
+.headerVal {
+    color: whitesmoke;
+}
+
+.headerValBox.box {
+    display: none;
+    border-radius: 1rem;
+    z-index: 9998;
+    top: 2rem;
+    background-color: #E58B33;
+    width: 10rem;
+    margin-top: 0;
+}
+
+#headerCampingBtn {
+    position: relative;
+}
+
+#headerCamping {
+    position: fixed;
+    display: none;
+    left: 50%;
+}
+
+#headerCommunityBtn {
+    position: relative;
+}
+
+#headerCommunity {
+    position: fixed;
+    display: none;
+    left: 50%;
+}
+
+.headerBtn {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    transition: line-height 0.3s, letter-spacing 0.3s;
+}
+
+.headerBtn:hover {
+    letter-spacing: 2px; /* 원하는 값으로 변경 */
+}
+
+.headerCategory, .headerVal {
+    transition: line-height 0.3s, letter-spacing 0.3s;
+}
+
+.headerCategory:hover, .headerVal:hover {
+    letter-spacing: 2px; /* 원하는 값으로 변경 */
+}
+
+.headerBtn.mainBtn {
+    padding: 0.5rem;
+}
+
+.headerCategory {
+    font-family: fantasy;
+    color: whitesmoke;
+    font-size: 1.3rem;
+}
+
+.headerName {
+    display: contents;
+}
+
+/*typo*/
+#typo {
+    width: 15%;
+    margin-top: 10px;
+}
+
+/*button*/
+
+button {
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 15px;
+    border-radius: 40px;
+    padding: 15px;
+}
+
+button:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 마우스를 올렸을 때의 그림자 효과를 설정합니다. */
+}
+
+.mainBtn {
+    background-color: #E58B33;
+    font-size: 15px;
+    color: white;
+}
+
+#Btn100 {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.moreBtn {
+    width: auto;
+    background-color: transparent;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    color: #5a5a5a;
+    font-weight: bolder;
+    padding: 0;
+}
+
+.moreBtn:hover {
+    box-shadow: none;
+}
+
+/*header*/
+
+h1.major, h2.major, h3.major, h4.major, h5.major, h6.major {
+    border-bottom: solid 1px rgba(27, 31, 34, 0.5);
+    width: max-content;
+    padding-bottom: 0.5rem;
+    margin: 0 0 2rem 0;
+}
+
+h2.major {
+    margin: 0 0 1rem 0;
+}
+
+.centerBox {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: auto;
+    max-height: 100vh; /* 화면 높이를 넘지 않도록 설정 */
+}
+
+.box {
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    padding: 3rem;
+    margin-top: 7rem;
+    background-color: #fdfada;
+    border-radius: 60px;
+}
+
+.nonPaddingBox {
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin: auto;
+    background-color: burlywood;
+}
+
+/*footer*/
+
+#footer {
+    -moz-transition: -moz-transform 0.325s ease-in-out, -moz-filter 0.325s ease-in-out, opacity 0.325s ease-in-out;
+    -webkit-transition: -webkit-transform 0.325s ease-in-out, -webkit-filter 0.325s ease-in-out, opacity 0.325s ease-in-out;
+    -ms-transition: -ms-transform 0.325s ease-in-out, -ms-filter 0.325s ease-in-out, opacity 0.325s ease-in-out;
+    transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out, opacity 0.325s ease-in-out;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+#footer .copyright {
+    letter-spacing: 0.2rem;
+    font-size: 0.6rem;
+    opacity: 0.75;
+    margin-bottom: 0;
+    text-transform: uppercase;
+    position: fixed; /* footer를 고정 위치에 둡니다. */
+    bottom: 0; /* footer를 하단에 위치하게 합니다. */
+    width: 100%; /* footer의 너비를 100%로 설정하여 전체 너비를 차지하게 합니다. */
+}
+
+/*Table*/
+
+table {
+    margin: 0 0 1rem 0;
+    width: 100%;
+    font-size: 15px;
+}
+
+table tbody tr {
+    border: solid 1px #ffffff;
+    border-left: 0;
+    border-right: 0;
+}
+
+table tbody tr:nth-child(2n + 1) {
+    background-color: rgba(127, 127, 127, 0.15)
+}
+
+table td {
+    padding: 0.75em 0.75em;
+}
+
+table th {
+    /*color: #ffffff;*/
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 0.75em 0.75em 0.75em 0.75em;
+    text-align: left;
+}
+
+table thead {
+    border-bottom: solid 2px #ffffff;
+}
+
+table tfoot {
+    border-top: solid 2px #ffffff;
+}
+
+table.alt {
+    border-collapse: separate;
+}
+
+table.alt tbody tr td {
+    border: solid 1px #ffffff;
+    border-left-width: 0;
+    border-top-width: 0;
+}
+
+table.alt tbody tr td:first-child {
+    border-left-width: 1px;
+}
+
+table.alt tbody tr:first-child td {
+    border-top-width: 1px;
+}
+
+table.alt thead {
+    border-bottom: 0;
+}
+
+table.alt tfoot {
+    border-top: 0;
+}
+
+.tableResult:hover {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/*membership*/
+
+.membership-sex {
+    justify-content: center;
+    align-items: center;
+    padding: 0.3rem !important;
+}
+
+#submitBtn {
+    width: -webkit-fill-available;
+}
+
+#privacy {
+    height: 400px;
+}
+
+#membershipAgree {
+    font-size: 15px;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+#membershipBox {
+    margin-top: 0;
+}
+
+#membershipAgree input {
+    margin-right: 10px;
+}
+
+#membershipAgree label {
+    margin-right: 20px;
+}
+
+.membershipBtn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#agreeBtn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+#membershipContain {
+    display: table;
+}
+
+#membershipContain input,
+#membershipContain button {
+    margin: 10px 0; /* 위아래로 10px의 마진을 추가합니다. */
+}
+
+#membershipContain .input-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#membershipContain .input-group input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.memberContain {
+    margin-bottom: 20px;
+}
+
+/*userSearch*/
+
+#user-search-name-pw {
+    margin-bottom: 1rem;
+}
+
+#user-search-logo {
+    width: 55%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#user-search-box {
+    width: 30%;
+    margin: auto;
+}
+
+#user-search-prov {
+    margin-bottom: 1rem;
+}
+
+#user-search-birth {
+    margin-bottom: 1rem;
+}
+
+#user-search-email {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+#user-search-phone {
+    margin-bottom: 1rem;
+}
+
+/*loginPage*/
+
+.member-find {
+    color: #888888;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+#loginBtn {
+    width: -webkit-fill-available;
+}
+
+#wrapper {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    width: 15%;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+}
+
+#userId {
+    width: -webkit-fill-available;
+}
+
+#userPw {
+    width: -webkit-fill-available;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+#snsGroup {
+    display: inline-flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+#snsGroup img {
+    width: 50%;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.snsA {
+    display: flex;
+    justify-content: center;
+}
+
+.buttonContain {
+    display: flex;
+    margin-top: 4px;
+}
+
+.buttonContain button {
+    flex: 1;
+}
+
+#logoTypo {
+    width: 100%;
+}
+
+/*searchPage*/
+
+.search-icon-area {
+    width: 2rem;
+}
+
+.search-icon {
+    width: 2rem;
+    filter: invert(100%);
+}
+
+#searchContain {
+    margin-bottom: 20px;
+    display: flex;
+}
+
+#searchBar {
+    flex-grow: 1;
+}
+
+#search-box {
+    position: absolute;
+    left: 0;
+    display: none;
+    width: 27%;
+    height: 684px;
+    margin-right: 2rem;
+    padding: 4rem;
+    border-radius: 50px;
+    background-color: #fdfada;
+}
+
+table#searchList td {
+    max-width: 100px;
+    word-break: break-all;
+    padding: 0.75em 0.75em;
+}
+
+#searchRequirement {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5rem;
+    margin-bottom: 3rem;
+}
+
+#menuImg {
+    width: 20px;
+}
+
+#closeImg {
+    width: 7px;
+}
+
+.close {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    float: right;
+}
+
+#search-box-toggle {
+    display: grid;
+}
+
+#kakaoMap {
+    width: 50rem;
+    height: 37rem;
+}
+
+#contentSearchArea {
+    display: inline-grid;
+    margin: auto;
+}
+
+#search-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    position: relative;
+}
+
+#searchBtn {
+    width: 5rem;
+}
+
+.saveBtn {
+    width: 1rem;
+}
+
+.saveLabel {
+    width: fit-content;
+    border: none;
+    height: fit-content;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    padding: 1px;
+    margin-top: 2rem;
+    margin-left: 1rem;
+}
+
+#saveLabel {
+    background-color: transparent;
+}
+
+.saveLabel:hover {
+    border: none;
+    background: none;
+}
+
+#saveBtn:checked + .saveLabel {
+    border: none;
+    background: none;
+    color: rgb(27, 31, 34);
+}
+
+.saveBtnImg {
+    margin-right: 0.5rem;
+}
+
+/* 슬라이드쇼 스타일 */
+.slideshow-container {
+    max-width: 1000px;
+    position: relative;
+    margin: auto;
+    overflow: hidden;
+}
+
+.slideshow {
+    display: flex;
+    width: 100%;
+    transition: transform 0.5s ease;
+    justify-content: center;
+}
+
+.slide {
+    min-width: 100%;
+}
+
+input[name="slide"] {
+    display: none;
+}
+
+.detailImg {
+    width: 50rem;
+}
+
+.detailBox {
+    margin: auto;
+    width: 52rem;
+}
+
+/* 동그라미의 기본 스타일을 설정합니다. */
+.dot {
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    border: 2px solid #717171;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+}
+
+/* 현재 표시되는 슬라이드에 대응하는 동그라미의 스타일을 설정합니다. */
+.dot.active {
+    background-color: #717171;
+}
+
+.dots {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 0.5rem;
+}
+
+/*CampDetail*/
+
+.camp-loading {
+    width: 50rem;
+}
+
+.imgIcon {
+    width: 20px;
+}
+
+.humanIcon {
+    width: 30px;
+}
+
+.detailContent {
+    display: block;
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+}
+
+#detailContain {
+    margin-bottom: 2rem;
+}
+
+#detailIcon {
+    display: flex;
+    flex-direction: column;
+}
+
+.campingName {
+    margin-bottom: 0.5rem;
+}
+
+.campingGrade {
+    margin-top: 0;
+}
+
+#reviewGrade {
+    margin-bottom: 1rem;
+}
+
+#detailContain {
+    border-bottom: 1px solid rgb(27, 31, 34);
+    width: 100%;
+}
+
+#detailContain label {
+    background: none;
+    border: none;
+    border-radius: 0;
+    width: 50%;
+    text-align: center;
+}
+
+#detailContain input[type="radio"]:checked + label {
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: rgb(27, 31, 34);
+}
+
+#detailContain input[type="radio"] {
+    display: none;
+}
+
+#detailContain input[type="radio"]:checked + label {
+    border-bottom: 2px solid rgb(27, 31, 34);
+}
+
+.search-star {
+    width: 15px
+}
+
+.star {
+    width: 20px;
+}
+
+#review {
+    display: none;
+}
+
+#detailBox {
+    width: 50%;
+}
+
+.campAreaImg {
+    width: 400px;
+    height: auto;
+
+}
+
+.arrow {
+    width: 2rem;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    background-color: #c6c6c6;
+    border-radius: 3rem;
+    padding: 0.5rem;
+}
+
+.arrow:hover {
+    opacity: 1;
+}
+
+#arrowL {
+    left: 10px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-right: 1rem;
+    padding-right: 0.7rem;
+}
+
+#arrowR {
+    right: 10px;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-left: 1rem;
+    padding-left: 0.7rem;
+}
+
+#goingBtn {
+    width: auto;
+}
+
+/*chat*/
+
+.chat-room-detail-user {
+    margin-bottom: 1rem;
+}
+
+#chat-room-detail-user-list-box {
+    background-color: #f1f9eb;
+    border: 1px solid yellowgreen;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 10%;
+    top: 50%;
+    position: fixed;
+    overflow: scroll;
+    height: -webkit-fill-available;
+}
+
+.chat-participation-room {
+
+    background-color: #fdfada;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #E58B33;
+    cursor: pointer;
+}
+
+#chat-participation {
+    height: 100vh;
+    width: 10%;
+    overflow: scroll;
+    border-radius: 0;
+    background-color: #f1f9eb;
+    border: 1px solid yellowgreen;
+    margin-top: 0;
+    top: 0;
+    position: fixed;
+    box-shadow: 1px 1px 1px rgba(35,37,45,0.11);
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+#chat-participation.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#chatBack {
+    width: 17rem;
+}
+
+#chatBox {
+    width: 53%;
+    overflow: scroll;
+    margin-top: 0;
+    height: revert;
+}
+
+.chatBtn {
+    width: 6rem;
+}
+
+.form-control {
+    width: 20rem;
+}
+
+.buttonContain .form-control {
+    flex-grow: 2;
+}
+
+/* 사용자가 보낸 메시지 */
+.message-user {
+    background-color: #eca07f; /* 카카오톡의 기본 색상 */
+    color: rgb(27, 31, 34);
+    text-align: right;
+    border-radius: 50px;
+    box-shadow: 0 0 10px rgba(120, 120, 120, 0.5);
+    margin: 10px 10px 10px auto;
+    padding: 20px;
+    width: fit-content;
+}
+
+/* 상대방이 보낸 메시지 */
+.message-other {
+    background-color: #f9f9f9;
+    color: rgb(27, 31, 34);
+    text-align: left;
+    border-radius: 50px;
+    box-shadow: 0 0 10px rgba(120, 120, 120, 0.5);
+    margin: 10px auto 10px 10px;
+    padding: 20px;
+    width: max-content;
+}
+
+.list-group {
+    padding-inline-start: 0;
+}
+
+.chat-container {
+    height: 560px;
+    overflow-y: scroll; /* 스크롤이 가능하도록 설정 */
+    width: -webkit-fill-available;
+}
+
+/* 스크롤바의 스타일을 설정 */
+.chat-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* 스크롤바의 트랙(바탕) 스타일을 설정 */
+.chat-container::-webkit-scrollbar-track {
+    background: transparent; /* 트랙을 투명하게 설정 */
+}
+
+/* 스크롤바의 핸들(움직이는 부분) 스타일을 설정 */
+.chat-container::-webkit-scrollbar-thumb {
+    background: #888; /* 핸들의 색상을 설정 */
+    border-radius: 20px; /* 핸들의 모서리를 둥글게 설정 */
+}
+
+/* 스크롤바의 핸들을 호버(마우스 오버)했을 때의 스타일을 설정 */
+.chat-container::-webkit-scrollbar-thumb:hover {
+    background: #555; /* 핸들의 색상을 변경 */
+}
+
+.message-notification {
+    text-align: center;
+    color: gray;
+}
+
+#chatExit {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    width: 10rem;
+    padding: 0.5rem;
+    justify-content: center;
+}
+
+#chatInputGroup {
+    width: 100%;
+}
+
+/*chatRoom*/
+
+#chatSearchNameBtn {
+    flex: none;
+    width: 8rem;
+}
+
+#chatSearchBar {
+    flex-grow: 0;
+}
+
+#chatRoomBox {
+    width: 65%;
+}
+
+.input-group-append {
+    position: relative;
+    /* 기존 스타일 속성들 */
+}
+
+#createChatRoomBtn {
+    width: 10rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.row .col-md-4 {
+    margin-bottom: 20px; /* 열 사이의 간격을 20px로 설정 */
+}
+
+#chatRoomSearch {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    background-color: #E58B33;
+}
+
+#chatRoomSearchBtn {
+    width: 10rem;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+}
+
+.chatRoomBox {
+    width: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    border-radius: 25px;
+    background-size: cover;
+    background-blend-mode: inherit;
+    background-clip: border-box;
+    background-color: #d5d5d5;
+    background: url(../images/bg/roombackBG.png);
+    background-size: cover;
+    background-position: center;
+}
+
+.chatRoomBox:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 마우스를 올렸을 때의 그림자 효과를 설정합니다. */
+}
+
+#chatRoomBox {
+    padding: 5rem;
+    width: 40%;
+}
+
+.chatGradeNum {
+    color: whitesmoke;
+}
+
+.campingNameChat {
+    margin: 0;
+    font-size: xx-large;
+    color: whitesmoke;
+}
+
+.lengthContain {
+    display: flex;
+    flex-direction: column;
+}
+
+#chatGradeMember {
+    margin-left: 1rem;
+}
+
+.chatGrade img {
+    width: 0.5rem;
+}
+
+.chatReviewNum {
+    color: #c8c8c8;
+    margin-left: 1rem;
+    font-size: 0.8rem;
+}
+
+.chatHumanIcon {
+    filter: invert(1);
+    width: 1rem;
+    object-fit: contain;
+}
+
+.chatPurpose {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 2rem 4.5rem 2rem;
+}
+
+.chatRoomName {
+    color: whitesmoke;
+    font-weight: bolder;
+    font-size: 1.5rem;
+}
+
+.chatPurposeSee {
+    filter: invert(1);
+    border: 2px solid rgb(112, 112, 112);
+    border-radius: 50px;
+    width: max-content;
+    padding: 0.7rem;
+    margin: auto auto 1rem;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.chatPurposeIcon {
+    width: 1.3rem;
+    object-fit: contain;
+}
+
+
+
+.chat-info {
+    display: block;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+}
+
+.people {
+    width: 1rem;
+    object-fit: contain;
+}
+
+.calender {
+    filter: invert(1);
+    width: 2rem;
+    margin: 1rem;
+    object-fit: contain;
+}
+
+.chatInfo {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0 0;
+    border: 2px solid #7c7c7c;
+    border-radius: 1rem;
+    padding: 0.5rem;
+}
+
+.satisfaction-room {
+    filter: invert(1);
+}
+
+.chat-day {
+    font-weight: bolder;
+    color: #ff9427;
+}
+
+.chat-member {
+    color: whitesmoke;
+}
+
+.chat-member-num {
+    font-weight: bolder;
+    font-size: 1.1rem;
+}
+
+.chatRoomNameBox {
+    display: block;
+}
+
+.chatRoomPN {
+    margin-left: 0.5rem;
+    font-weight: bolder;
+    color: #888888;
+}
+
+#chatSearchName {
+    margin-bottom: 1rem;
+}
+
+#chatSearchPurposeListBtn {
+    width: 10rem;
+    margin-bottom: 1rem;
+}
+
+.chatRoomPur {
+    display: none;
+}
+
+/*chatCreate*/
+
+#openSearch {
+    width: 8rem;
+    margin-top: 1rem;
+
+}
+
+.createName {
+    width: -webkit-fill-available;
+    margin-bottom: 2rem;
+}
+
+.createPurposeDiv {
+    margin-bottom: 2rem;
+}
+
+#chatCreateBox {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.createMember {
+    margin-bottom: 1rem;
+}
+
+/*mainPage*/
+
+#mainPageBtnzBody {
+    width: 100%; /* 너비를 100%로 설정 */
+    height: 100%; /* 높이를 100%로 설정 */
+}
+
+.mainPageBtn {
+    width: 9rem;
+}
+
+#mainPageBtnz {
+    margin: auto; /* 가운데 정렬 위해 마진을 자동으로 설정합니다. */
+}
+
+.mainPageBtn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10rem;
+    margin: -25px 0 0 -25px; /* 버튼을 중앙에 위치시키기 위해 마진을 설정합니다. */
+}
+
+#chat {
+    transform: rotate(-100deg) translate(340px) rotate(100deg)
+}
+
+#myPage {
+    transform: rotate(-28deg) translate(330px) rotate(28deg);
+    width: 16rem;
+}
+
+#book {
+    transform: rotate(45deg) translate(218px) rotate(-44deg);
+    width: 13rem;
+}
+
+#mainSearch {
+    transform: rotate(150deg) translate(337px) rotate(-149deg);
+}
+
+#product {
+    transform: rotate(199deg) translate(377px) rotate(-202deg);
+}
+
+.mainBoxText {
+    width: max-content;
+    display: none;
+    flex-direction: column;
+    padding: 1rem;
+    margin: auto;
+    background-color: #fdfada;
+    border-radius: 1rem;
+    position: absolute;
+    transition: left 0.3s, top 0.3s;
+}
+
+#mainToggle {
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+/*campingEssentials*/
+
+#itemDescription {
+    height: 30rem;
+    overflow: scroll;
+}
+
+.esseIcon {
+    width: 1.5rem;
+}
+
+.esseImg {
+    width: 5rem;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    /*margin: 20px;*/
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+h1 {
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.icon {
+    background-color: #fff;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.icon:hover {
+    transform: scale(1.05);
+}
+
+.icon img {
+    max-width: 100px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.details {
+    background-color: #fff;
+    padding: 20px;
+    margin: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    text-align: center;
+}
+
+.details h3 {
+    margin: 0;
+}
+
+.details p {
+    margin: 5px 0;
+    white-space: pre-line; /* Preserves whitespace and line breaks */
+}
+
+#esseBox {
+    width: 54rem;
+}
+
+/*myPage*/
+
+#myPageBack {
+    display: block;
+}
+
+#myPageCancel {
+    display: none;
+}
+
+#myPage-save {
+    display: contents;
+}
+
+#myPage-qna {
+    display: contents;
+}
+
+#myPage-review {
+    display: contents;
+}
+
+#myPageContainer {
+    /*position: relative;*/
+    width: 40%;
+    margin: auto;
+    height: 50rem;
+}
+
+
+.myPageArea {
+    margin-bottom: 3rem;
+}
+
+.myPageSpace {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#myPageDetailContain {
+    display: flex;
+    flex-direction: column;
+}
+
+
+#myPageDetailContain label {
+    background: none;
+    border: none;
+    border-radius: 0;
+    text-align: center;
+    margin: auto;
+    font-size: 1.2rem;
+}
+
+#myPageDetailContain input[type="radio"]:checked + label {
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: rgb(27, 31, 34);
+}
+
+#myPageDetailContain input[type="radio"] {
+    display: none;
+}
+
+#myPageDetailContain input[type="radio"]:checked + label {
+    border-bottom: 2px solid rgb(27, 31, 34);
+    font-weight: bold;
+}
+
+.myPage-review-box {
+    height: 39rem;
+    overflow: scroll;
+}
+
+.myPage-review-box::-webkit-scrollbar {
+    width: 2px; /* 원하는 스크롤바의 너비를 설정하세요 */
+}
+
+.myPage-review-box::-webkit-scrollbar-track {
+    background: transparent; /* 원하는 스크롤바 트랙의 배경색을 설정하세요 */
+}
+
+.myPage-review-box::-webkit-scrollbar-thumb {
+    background: #888; /* 원하는 스크롤바 핸들의 배경색을 설정하세요 */
+    border-radius: 1rem;
+}
+
+.myPage-review-box::-webkit-scrollbar-thumb:hover {
+    background: #555; /* 원하는 스크롤바 핸들의 호버 배경색을 설정하세요 */
+}
+
+.myPageBox {
+    width: 15rem;
+    background-color: #f1f9eb;
+    border: 1px solid yellowgreen;
+    padding: 1rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.myPage-info-title {
+    color: #5a5a5a;
+}
+
+.myPageTitle {
+    font-weight: bold;
+    color: #888888;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+
+}
+
+
+#myPageInfo {
+    display: block;
+}
+
+#myPageReview {
+    display: none;
+}
+
+#myPageSave {
+    display: none;
+}
+
+.myPageSaveTitle {
+    margin: 0;
+    padding: 0;
+}
+
+.myPageSavaLink {
+    font-size: 0.7rem;
+    color: #5a5a5a;
+}
+
+.myPageSaveTitle, .myPageSavaLink {
+    display: contents;
+    vertical-align: baseline;
+}
+
+.myPageProPicture {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #E58B33;;
+    border: 1px solid #ccc;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    position: absolute;
+    right: 2rem; /* 오른쪽에서의 위치를 지정합니다. */
+    bottom: 0; /* 하단에서의 위치를 지정합니다. */
+}
+
+.correctionImg {
+    position: relative;
+    width: 1rem;
+
+}
+
+#profileImg {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: #cccccc;
+    border-radius: 50%;
+    background-image: none;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#memberSexRead {
+    display: block;
+}
+
+#memberSexChange {
+    display: none;
+}
+
+#memberBirthRead {
+    display: block;
+}
+
+#memberBirthChange {
+    display: none;
+}
+
+#memberPhoneRead {
+    display: block;
+}
+
+#memberPhoneChange {
+    display: none;
+}
+
+#memberAddr1Read {
+    display: block;
+}
+
+#memberAddr1Change {
+    display: none;
+}
+
+#memberAddr2Read {
+    display: block;
+}
+
+#memberAddr2Change {
+    display: none;
+}
+
+#memberNickNameRead {
+    display: block;
+}
+
+#memberNickNameChange {
+    display: none;
+}
+
+#myPageRead {
+    display: none;
+}
+
+#myPageChange {
+    display: block;
+}
+
+.myPageInput {
+    padding: 0.5rem !important;
+    width: -webkit-fill-available;
+}
+
+.myPageBtn {
+    padding: 0.5rem !important;
+}
+
+/*review*/
+
+.nextContent:hover {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+#reviewCseq {
+    padding: 0.5rem !important;
+}
+
+.userReview .userName {
+    float: right;
+}
+
+.userReview {
+    margin: 3rem;
+}
+
+.userName {
+    margin-bottom: 1rem;
+}
+
+.review-topMargin {
+    margin-top: 2rem;
+}
+
+.review-insert-title {
+    margin-bottom: 1rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #E58B33;
+}
+
+.review-insert-input {
+    border-radius: 0.5rem !important;
+}
+
+.review-insert-margin-right {
+    margin-right: 1rem;
+}
+
+.review-title {
+    text-align: center;
+}
+
+.review-insert-margin-bottom {
+    margin-bottom: 1rem;
+}
+
+.review-insert-rating-title {
+    margin-bottom: 0;
+}
+
+/*list Page*/
+
+.page-box {
+    width: max-content;
+    display: flex;
+    flex-direction: row;
+    padding: 0 0.3rem;
+    background-color: #f1f9eb;
+    border: 1px solid yellowgreen;
+    border-radius: 2rem;
+    align-items: center;
+    margin: auto auto 1rem;
+}
+
+.page-num.current {
+    font-weight: bold;
+}
+
+.page-num:hover {
+    font-weight: bold;
+}
+
+.page-num {
+    margin-right: 1rem;
+    margin-left: 1rem;
+}
+
+.width-rem1 {
+    width: 1rem;
+}
+
+.page-index {
+    position: relative;
+}
+
+#search-list_area {
+    max-height: 300px; /* 화면 너비가 600px 이하일 때의 max-height 값 */
+    overflow-y: auto;
+}
+
+@media (min-width: 601px) {
+    #search-list_area {
+        max-height: 500px; /* 화면 너비가 601px 이상일 때의 max-height 값 */
+    }
+}
+
+#search-page_area {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    display: inline-flex;
+    justify-content: center;
+    margin: auto;
+}
+
+.review-list-search-index {
+    width: max-content;
+    display: flex;
+    flex-direction: row;
+    padding: 0 0.3rem;
+    border-radius: 2rem;
+    align-items: center;
+    margin: auto auto 1rem;
+}
+
+.review-box {
+    width: 60rem !important;
+}
+
+.review-list-create-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin-right: 2rem;
+    margin-bottom: 4rem;
+}
+
+.review-list-pop-back {
+    background-color: #e58b33db !important;
+}
+
+.popularPosts {
+    color: whitesmoke !important;
+}
+
+.active {
+    font-weight: bolder;
+    font-size: 1.1rem;
+}
+
+/*reviewDetail*/
+
+#review-detail-box {
+    width: 50rem;
+    overflow-wrap: anywhere;
+}
+
+#likeCount {
+    display: none;
+}
+
+hr.vertical {
+    transform: rotate(0deg);
+    width: -webkit-fill-available !important;
+}
+
+.button-full {
+    display: flex; /* flexbox 레이아웃을 사용 */
+    justify-content: space-between; /* 아이템들 사이에 동일한 간격을 두어 꽉 차게 만듭니다 */
+}
+
+.space-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.space-between-flex {
+    flex: 1;
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+}
+
+.margin0 {
+    margin: 0 !important;
+}
+
+.width-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.reviewDetail-save-img {
+    width: 3rem;
+}
+
+.reviewDetail-box {
+    background-color: whitesmoke;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: 1px solid #ccc;
+}
+
+/*qna*/
+
+#oneByone {
+    width: -webkit-fill-available;
+}
+
+.faqTitle {
+    font-size: 1.5rem;
+    margin: 1rem;
+}
+
+.faqContent {
+    margin: 1rem;
+}
+
+details {
+    padding: 0 2rem;
+    background-color: #f1f9eb;
+    border: 1px solid yellowgreen;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+details:last-child {
+    margin-bottom: 0;
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+summary {
+    display: block;
+    padding: 2rem 3rem 2rem 0;
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+}
+
+summary::before,
+summary::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 2px;
+    background-color: #222;
+    right: 1rem;
+    top: 2.5rem;
+}
+
+summary::after {
+    transform: rotateZ(90deg);
+}
+
+details p {
+    padding-bottom: 2rem;
+}
+
+details[open] summary::after {
+    display: none;
+}
+
+.faqImg {
+    margin-bottom: 2rem;
+}
+
+.faq-label {
+    font-size: 1.5rem;
+}
+
+.qna-label {
+    font-size: 1.5rem;
+}
+
+#myPageQna {
+    display: none;
+}
+
+.qna-content {
+    width: -webkit-fill-available;
+    height: 300px;
+    border-radius: 1rem;
+    border: 1px solid #ccc;
+    padding: 1rem;
+    resize: none;
+}
+
+.qna-createdAt {
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+}
+
+.qna-contain {
+    margin-left: 3rem;
+    margin-right: 3rem;
+}

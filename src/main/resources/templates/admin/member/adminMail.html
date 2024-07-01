@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<article class="box centerBox" id="review-detail-box">
+    <div class="container">
+        <form action="/mail/admin" method="post" id="adminMailForm">
+            <input type="text" placeholder="공지 제목" name="title" id="title"><hr>
+            <textarea id="content" name="content"></textarea>
+        </form>
+        <button type="button" id="mailBtn">전송하기</button>
+        <button type="button" id="backBtn">뒤로가기</button>
+    </div>
+
+</article>
+<th:block th:insert="/insert/footer"></th:block>
+<script>
+    document.getElementById('mailBtn').addEventListener('click', function () {
+        if ($("#title").val() == "") {
+            alert("제목을 작성하세요.");
+            $("#title").focus();
+        } else if ($("#content").val() == "") {
+            alert("내용을 입력하세요.");
+            $("#content").focus();
+        } else {
+            $("#adminMailForm").attr('action', '/mail/admin').submit();
+        }
+    })
+
+    document.getElementById('backBtn').addEventListener('click', function () {
+        history.go(-1);
+    })
+</script>
+</body>
+</html>

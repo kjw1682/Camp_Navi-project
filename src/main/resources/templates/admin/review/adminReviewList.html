@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+
+    <title>리뷰 관리 페이지</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            font-family: Arial, sans-serif; /* 폰트 설정 */
+            line-height: 1.6; /* 줄 간격 */
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #343a40;
+            padding: 20px;
+        }
+        .sidebar a {
+            color: #ffffff;
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #495057;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+        .page-index {
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .page-box {
+            text-align: center;
+        }
+        .page-num {
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .page-num.active {
+            font-weight: bold;
+        }
+        .icon {
+            cursor: pointer;
+        }
+        .review-list-pop-back {
+            background-color: #f8f9fa;
+        }
+        .popularPosts {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .btn-primary {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+<div class="d-flex">
+    <div class="sidebar">
+        <a th:href="@{/admin/}"><h4 class="text-white">CampNavi Admin</h4></a>
+        <a th:href="@{/admin/update_page}">데이터 관리</a>
+        <a th:href="@{/admin/review/list}">리뷰 관리</a>
+        <a th:href="@{/admin/member/list}">회원 관리</a>
+        <a th:href="@{/admin/supervisor/list}">관리자 관리</a>
+        <a th:href="@{/admin/faq/list}">FAQ 관리</a>
+        <a th:href="@{/admin/qna/list}">1:1 문의 관리</a>
+        <a th:href="@{/admin/chat/adminChatList}">채팅 관리</a>
+        <a href="/oauth-login/member/logoutProc">로그아웃</a>
+    </div>
+</div>
+<div class="content">
+    <h2 class="my-4">리뷰 리스트 관리자 페이지</h2>
+    <div class="page-index">
+        <!-- 검색 영역 -->
+        <form method="get" th:action="@{/admin/review/list}">
+            <div class="search-container form-inline">
+                <select class="form-control mr-2" id="search" name="searchField">
+                    <option value="campName">캠핑장명</option>
+                    <option value="title">제목</option>
+                    <option value="content">내용</option>
+                    <option value="titleContent">제목 / 내용</option>
+                    <option value="writer">작성자 ID</option>
+                </select>
+                <input class="form-control mr-2" name="searchWord" type="text">
+                <button class="btn btn-primary" type="submit">검색</button>
+            </div>
+        </form>
+
+        <!-- 리스트 영역 -->
+        <div id="list_area"></div>
+
+        <!-- 페이지 영역 -->
+        <div class="page-box" id="page_area"></div>
+    </div>
+</div>
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        reloadList(1, "vseq", "DESC");
+    });
+
+    function reloadList(page, sortBy, sortDirection) {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/review/reloadList',
+            data: {
+                page: page,
+                sortBy: sortBy,
+                sortDirection: sortDirection
+            },
+            success: function (data) {
+                let list = data.reviewVoList;
+                let bestList = data.reviewVoBestList;
+                let totalPages = data.totalPages;
+                let page = data.page;
+                let size = data.size;
+                let pageMaxDisplay = data.pageMaxDisplay;
+                let result = data.result;
+
+
+                if (result === "success") {
+                    let HTML = "";
+                    HTML += "<table class='table table-striped'><thead><tr><th>캠핑장명</th><th>제목</th><th>작성자</th><th>작성일시</th><th>추천수</th><th>조회수</th></tr></thead><tbody>";
+                    for (let i = 0; i < (bestList.length < 3 ? bestList.length : 3); i++) {
+
+                        var bestTitle = bestList[i].review.title;
+
+                        if (bestTitle.length > 50) {
+                            bestTitle = bestTitle.substring(0, 50) + "...";
+                        }
+
+                        HTML += "<tr class='review-list-pop-back'><td class=\"popularPosts\">" + bestList[i].review.camp.name + "</td>"
+                        HTML += "<td><div class=\"popularPosts\">[인기] <a class=\"popularPosts\" href=\"/admin/review/view/" + bestList[i].review.vseq + "\">";
+                        HTML += "<span class=\"popularPosts\" >" + bestTitle + "&nbsp</span>";
+                        HTML += "<img src=\"/assets/images/icon/reply.png\" style=\"width: 18px; height: 18px; vertical-align: middle; filter: invert(100%);\"/>";
+                        HTML += "<span> [" + bestList[i].review.commentCount + "]</span></a></div>";
+                        HTML += "<input type=\"hidden\" name=\"vseq\" value=\"" + bestList[i].review.vseq + "\"/></td>";
+                        HTML += "<input type=\"hidden\" name=\"mseq\" value=\"" + bestList[i].review.member.mseq + "\"/></td>";
+                        HTML += "<td class='popularPosts'>" + bestList[i].review.member.name + "</td>";
+                        HTML += "<td class=\"popularPosts\">" + bestList[i].createdAt + "</td>";
+                        HTML += "<td class=\"popularPosts\">" + bestList[i].rcdCount + "</td>";
+                        HTML += "<td class=\"popularPosts\">" + bestList[i].review.count + "</td></tr>";
+                    }
+
+                    for (let i = (page - 1) * size; i < (page * size < list.length ? page * size : list.length); i++) {
+
+                        var title = list[i].review.title
+
+                        if (title.length > 50) {
+                            title = title.substring(0, 50) + "...";
+                        }
+
+                        HTML += "<tr><td class=\"review_list\">" + list[i].review.camp.name + "</td>"
+                        HTML += "<td><div class=\"review_list\"><a href=\"/admin/review/view/" + list[i].review.vseq + "\">";
+                        HTML += "<span>" + title + "&nbsp</span>";
+                        HTML += "<img src=\"/assets/images/icon/reply.png\" style=\"width: 18px; height: 18px; vertical-align: middle;\"/>";
+                        HTML += "<span> [" + list[i].review.commentCount + "]</span></a></div>";
+                        HTML += "<input type=\"hidden\" name=\"vseq\" value=\"" + list[i].review.vseq + "\"/></td>";
+                        HTML += "<input type=\"hidden\" name=\"mseq\" value=\"" + list[i].review.member.mseq + "\"/></td>";
+                        HTML += "<td>" + list[i].review.member.name + "</td>";
+                        HTML += "<td>" + list[i].createdAt + "</td>";
+                        HTML += "<td>" + list[i].rcdCount + "</td>";
+                        HTML += "<td>" + list[i].review.count + "</td></tr>";
+                    }
+
+                    HTML += "</tbody></table>";
+                    $("#list_area").html(HTML);
+                }
+
+                // 페이지 번호 요소를 동적으로 생성합니다.
+                let pageHTML = "";
+                if (page == 1) {
+                    pageHTML += "<img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowL.png\" style=\"width: 20px; height: 20px;\">";
+
+                } else {
+                    pageHTML += "<a href=\"\" onclick=\"reloadList(" + (page-1) + ", 'vseq', 'DESC'); return false;\"><img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowL.png\" style=\"width: 20px; height: 20px;\"></a>";
+                }
+
+                let start = parseInt((page-1)/pageMaxDisplay)*pageMaxDisplay + 1;
+                let end = start + pageMaxDisplay < totalPages ? start + pageMaxDisplay : totalPages + 1;
+                for (let i = start; i < end; i++) {
+                    if (i == page) {
+                        pageHTML += "<span class=\"page-num active\">" + i + "</span>";
+                    } else {
+                        pageHTML += "<a href=\"\" class=\"page-num\">" + i + "</a>";
+                    }
+                }
+                if (page == totalPages) {
+                    pageHTML += "<img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowR.png\" style=\"width: 20px; height: 20px;\">";
+                } else {
+                    pageHTML += "<a href=\"\" onclick=\"reloadList(" + (page+1) + ", 'vseq', 'DESC'); return false;\"><img class=\"icon width-rem1\" src=\"/assets/images/icon/arrowR.png\" style=\"width: 20px; height: 20px;\"></a>";
+                }
+                document.getElementById('page_area').innerHTML = pageHTML;
+
+                // 페이지 번호를 클릭하면 해당 페이지의 내용을 불러오는 함수
+                function handlePageClick(event) {
+                    const pageNumber = parseInt(event.target.textContent);
+                    reloadList(pageNumber, 'vseq', 'DESC');
+                    event.preventDefault();
+                }
+
+                // 페이지 번호 요소들을 가져옵니다.
+                const pageNumElements = document.querySelectorAll('.page-num');
+
+                // 각 페이지 번호 요소에 클릭 이벤트 리스너를 추가합니다.
+                pageNumElements.forEach((pageNumElement) => {
+                    pageNumElement.addEventListener('click', handlePageClick);
+                });
+            },
+            error: function () {
+                alert("리스트 갱신 실패!");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+
+<body>
+
+<th:block th:insert="insert/header.html"></th:block>
+
+
+<div class="box centerBox" id="esseBox">
+        <div class="icons buttonContain">
+            <div class="icon" th:data-description="${product.description}"
+                 th:data-link="${product.shoppingLink}"
+                 th:data-name="${product.name}"
+                 th:each="product : ${products}">
+                <img alt="Product Image" class="esseImg" th:src="@{${product.imageUrl}}">
+                <p th:text="${product.name}"></p>
+            </div>
+        </div>
+
+    <div class="details">
+        <h3 id="itemName">제품 이름</h3>
+        <p id="itemDescription">제품 설명</p>
+        <a href="#" id="itemLink" target="_blank">
+            <button type="button" class="mainBtn">쇼핑하러 가기</button>
+        </a>
+    </div>
+</div>
+
+<th:block th:insert="insert/footer.html"></th:block>
+
+<script>
+    function showDetails(name, description, link) {
+        document.getElementById('itemName').innerText = name;
+        document.getElementById('itemDescription').innerHTML = description; // Use innerHTML to handle HTML content
+        document.getElementById('itemLink').href = link;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var icons = document.querySelectorAll('.icon');
+        icons.forEach(function (icon) {
+            icon.addEventListener('click', function () {
+                var name = this.getAttribute('data-name');
+                var description = this.getAttribute('data-description');
+                var link = this.getAttribute('data-link');
+                showDetails(name, description, link);
+            });
+        });
+
+        // Display first item details by default
+        if (icons.length > 0) {
+            var firstIcon = icons[0];
+            var name = firstIcon.getAttribute('data-name');
+            var description = firstIcon.getAttribute('data-description');
+            var link = firstIcon.getAttribute('data-link');
+            showDetails(name, description, link);
+        }
+    });
+</script>
+</body>
+</html>

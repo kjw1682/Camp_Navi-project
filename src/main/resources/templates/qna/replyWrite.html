@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>CampNavi</title>
+</head>
+
+<body>
+<article class="box centerBox" id="review-detail-box">
+    <div class="container">
+        <h2 class="mb-4" th:text="${qna.type == 'FAQ' ? 'FAQ' : '1:1 문의'}"></h2>
+        <hr class="vertical">
+        <div class="card webkit">
+            <form action="/qna/reply/answer" method="post" enctype="multipart/form-data" id="replyForm">
+            <div class="card-header">
+                제목: <span th:text="${qna.title}"></span>
+                <input type="hidden" name="qseq" th:value="${qna.qseq}">
+            </div>
+            <hr>
+            <div class="card-body">
+                <div class="info">
+                    <div class="space-between">
+                        <div class="space-between-flex">
+                            <span th:text="'작성자 : '+${qna.member.name}">작성자명</span>
+
+                        </div>
+                        <div class="space-between-flex">
+                            <span th:text="'작성일시 : '+${qna.createdAt}">날짜시간</span>
+                        </div>
+                    </div>
+                    <div th:if="${qna.image != null}">
+                        <hr>
+                        <img class="campAreaImg" th:src="@{/assets/qnaImages/} + ${qna.image}">
+                    </div>
+                    <hr>
+                </div>
+
+                <span th:text="${qna.content}"></span>
+                <hr>
+                <textarea class="qna-content" id="content" name="content"></textarea>
+                <hr>
+                <button type="button" id="input_file">파일 첨부</button>
+                <input type="text" id="input_file_name" name="input_file_name" value="파일 없음" readonly>
+                <input type="file" name="img" id="img" hidden="hidden">
+                <input type="hidden" id="isEmpty" name="isEmpty" th:value="${isEmpty}">
+                <button type="button" id="input_file_clear">삭제</button>
+                <hr>
+                <div class="buttonContain button-full">
+                    <!-- 작성자만 수정 및 삭제 버튼을 볼 수 있도록 -->
+                    <button class="webkit" type="button" onclick="writeReply()">작성완료</button>
+
+                    <!-- 목록으로 돌아가기 -->
+                    <button type="button" class="webkit" onclick="backToDetail()">뒤로가기</button>
+                </div>
+
+                <hr>
+            </div>
+                <input type="hidden" id="username" name="mseq" th:value="${member.mseq}">
+                <input type="hidden" id="qseq" name="qseq" th:value="${qna.qseq}">
+            </form>
+        </div>
+    </div>
+
+</article>
+<th:block th:insert="/insert/footer"></th:block>
+<script>
+
+    function writeReply() {
+        if ($("#content").val() == "") {
+            alert("답변을 작성해주세요.");
+            $("#content").focus();
+        } else {
+            $("#replyForm").attr('action', '/qna/reply/answer').submit();
+        }
+    }
+
+    function backToDetail() {
+        history.go(-1);
+    }
+
+    document.getElementById("input_file").addEventListener("click", function() {
+        $("#img").click();
+    });
+
+    document.getElementById("input_file_clear").addEventListener("click", function() {
+        $("#input_file_name").val('파일 없음');
+        document.getElementById("img").value = "";
+        $("#isEmpty").val(true);
+    });
+
+    document.getElementById("img").addEventListener("change", function() {
+        let target = document.getElementById("img");
+        $("#input_file_name").val(target.files[0].name);
+        $("#isEmpty").val(false);
+    });
+</script>
+</body>
+</html>

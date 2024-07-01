@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/mainBG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<body>
+<th:block th:insert="insert/header.html"></th:block>
+
+<div class="box centerBox" id="myPageContainer">
+    <div class="myPageArea">
+        <div class="myPageTitle">
+            <span for="name">회원 이름: </span>
+            <span id="name" th:text="${member.name}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="username">아이디: </span>
+            <span id="username" th:text="${member.username}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="nickname">닉네임: </span>
+            <span id="nickname" th:text="${member.nickname}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="birth">생년월일: </span>
+            <span id="birth" th:text="${member.birth}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="sex">성별: </span>
+            <span id="sex" th:text="${member.sex == 'm' ? '남' : '여'}"></span>
+            <hr>
+        </div>
+    </div>
+    <div class="myPageArea">
+        <div class="myPageTitle">
+            <span for="email">이메일: </span>
+            <span id="email" th:text="${member.email}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="phone">전화번호: </span>
+            <span id="phone" th:text="${member.phone}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle">
+            <span for="addr">주소: </span>
+            <span id="addr" th:text="${member.addr1 + ' ' + member.addr2}"></span>
+            <hr>
+        </div>
+        <div class="myPageTitle" id="useynBox">
+            <span for="useyn">사용여부: </span>
+            <span id="useyn" th:text="${member.useyn == 'y' ? '사용' : '미사용'}"></span>
+            <hr>
+        </div>
+    </div>
+    <div class="myPageArea">
+        <div class="myPageTitle">
+            <button id="delete-btn" class="delete-btn" th:data-mseq="${member.mseq}">해지</button>
+            <button id="restore-btn" class="restore-btn" th:data-mseq="${member.mseq}">복구</button>
+            <button id="backUrl">뒤로가기</button>
+        </div>
+    </div>
+</div>
+<div id="bg"></div>
+</body>
+<script>
+
+    $(document).ready(function () {
+        let deleteBtn = document.getElementById('delete-btn');
+        let restoreBtn = document.getElementById('restore-btn');
+        if ($("#useyn").text() === "사용") {
+            restoreBtn.style.display = 'none';
+            deleteBtn.style.display = 'inline-block';
+        } else {
+            restoreBtn.style.display = 'inline-block';
+            deleteBtn.style.display = 'none';
+        }
+    })
+
+    $(document).on('click', '.delete-btn', function () {
+        var mseq = $(this).data('mseq');
+        deleteMember(mseq);
+    });
+
+    function deleteMember(mseq) {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/member/delete',
+            data: {
+                mseq: mseq
+            },
+            success: function (response) {
+                // 성공적으로 삭제되었을 때 처리
+                alert('사용자 삭제 ' + response.result);
+                // 삭제 후 목록 다시 로드
+                updateUseyn(response.useyn)
+                let deleteBtn = document.getElementById('delete-btn');
+                let restoreBtn = document.getElementById('restore-btn');
+                restoreBtn.style.display = 'inline-block';
+                deleteBtn.style.display = 'none';
+            },
+            error: function (error) {
+                alert('사용자 데이터 전송 실패', error);
+                // 실패 시 추가 처리
+            }
+        });
+    }
+
+    $(document).on('click', '.restore-btn', function () {
+        var mseq = $(this).data('mseq');
+        restoreMember(mseq);
+    });
+
+    function restoreMember(mseq) {
+        $.ajax({
+            type: 'POST',
+            url: '/admin/member/restore',
+            data: {
+                mseq: mseq
+            },
+            success: function (response) {
+                // 성공적으로 삭제되었을 때 처리
+                alert('사용자 복구 ' + response.result);
+                // 삭제 후 목록 다시 로드
+                updateUseyn(response.useyn)
+                let deleteBtn = document.getElementById('delete-btn');
+                let restoreBtn = document.getElementById('restore-btn');
+                restoreBtn.style.display = 'none';
+                deleteBtn.style.display = 'inline-block';
+            },
+            error: function (error) {
+                alert('사용자 데이터 전송 실패', error);
+                // 실패 시 추가 처리
+            }
+        });
+    }
+
+    function updateUseyn(useyn) {
+        let useynArea = $('#useynBox');
+        var HTML = '';
+        HTML += '<span for="useyn">사용여부: </span>';
+        HTML += '<span id="useyn">' + (useyn == 'y' ? '사용' : '미사용') + '</span>';
+        HTML += '<hr>';
+        useynArea.html(HTML);
+    }
+
+    document.getElementById('backUrl').addEventListener('click', function () {
+        history.go(-1);
+    })
+</script>
+</html>

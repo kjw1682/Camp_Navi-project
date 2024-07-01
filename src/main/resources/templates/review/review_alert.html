@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Alert Page</title>
+</head>
+<body>
+<!-- JavaScript 코드를 통해 alert 호출 -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 검색 결과가 없는 경우 알림창 표시
+    var msg = /*[[${msg}]]*/ '';
+    var redirectTo = /*[[${redirectTo}]]*/ '';
+    if (msg != null) {
+        alert(msg);
+        window.location.replace(redirectTo);
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

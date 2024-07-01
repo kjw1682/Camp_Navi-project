@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="kr" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="/assets/css/main.css" rel="stylesheet"/>
+    <link href="/assets/css/bg/BG.css" rel="stylesheet"/>
+    <title>CampNavi</title>
+</head>
+<style>
+    .page-number {
+        margin: 0 5px; /* 좌우 여백 조정 */
+        cursor: pointer; /* 마우스 포인터를 손가락 모양으로 변경 */
+    }
+
+    .page-number.current {
+        font-weight: bold; /* 현재 페이지 숫자는 볼드체로 표시 */
+    }
+</style>
+<body>
+
+<th:block th:insert="~{insert/header.html}"></th:block>
+
+<div class="box detailBox centerBox">
+    <div class="buttonContain" id="reviewGrade">
+
+    </div>
+    <div class="buttonContain">
+        <!--        <a href="/qna/faq/writeView">
+                <button class="mainBtn" id="faqWrite" target="_blank" type="button">
+                    FAQ 작성하기
+                </button>
+                </a>-->
+    </div>
+    <div class="buttonContain" id="detailContain">
+        <input checked class="detailBtn" id="faq" name="btn" type="radio">
+        <label class="faq-label" for="faq">자주 묻는 질문</label>
+        <input class="detailBtn" id="qna" name="btn" type="radio">
+        <label class="qna-label" for="qna">1:1 문의</label>
+    </div>
+
+    <div id="campDetail">
+        <div class="reviewList">
+            <!-- 리스트 영역 -->
+            <div id="faqList"></div>
+
+        </div>
+    </div>
+
+    <div id="review">
+        <a href="/qna/oneByone/writeView">
+            <button class="mainBtn" id="oneByone" target="_blank" type="button">
+                1:1 문의 작성하기
+            </button>
+        </a>
+        <div class="reviewList">
+            <!-- 리스트 영역 -->
+            <div id="qnaList"></div>
+
+        </div>
+
+
+    </div>
+</div>
+
+<input id="userRole" th:value="${member.role}" type="hidden">
+<input id="username" th:value="${member.username}" type="hidden">
+<th:block th:insert="~{insert/footer.html}"></th:block>
+
+<script>
+    document.getElementById('faq').addEventListener('click', function () {
+        document.getElementById('campDetail').style.display = 'block';
+        document.getElementById('review').style.display = 'none';
+    });
+
+    document.getElementById('qna').addEventListener('click', function () {
+        document.getElementById('campDetail').style.display = 'none';
+        document.getElementById('review').style.display = 'block';
+    });
+
+    window.onload = function () {
+        // 슬라이드 쇼의 슬라이드를 가져옵니다.
+        var slides = document.querySelectorAll('.slide');
+
+        // 슬라이드 쇼의 동그라미를 가져옵니다.
+        var dots = document.querySelectorAll('.dot');
+
+        // 현재 표시되는 슬라이드의 인덱스를 저장합니다.
+        var currentSlide = 0;
+
+        // 모든 슬라이드와 동그라미를 숨깁니다.
+        function hideAllSlides() {
+            for (var i = 0; i < slides.length; i++) {
+                slides[i].style.display = 'none';
+                dots[i].classList.remove('active');
+            }
+        }
+
+        // 지정된 슬라이드를 표시하고, 해당 슬라이드에 대응하는 동그라미의 색상을 변경합니다.
+        function showSlide(index) {
+            hideAllSlides();
+            slides[index].style.display = 'block';
+            dots[index].classList.add('active');
+        }
+
+        // 다음 슬라이드를 표시합니다.
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // 이전 슬라이드를 표시합니다.
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // 첫 번째 슬라이드를 표시합니다.
+        showSlide(currentSlide);
+
+        // arrowR 버튼과 arrowL 버튼에 이벤트 리스너를 추가합니다.
+        document.querySelector('#arrowR').addEventListener('click', nextSlide);
+        document.querySelector('#arrowL').addEventListener('click', prevSlide);
+    }
+
+    document.getElementById('reservationBtn').addEventListener('click', function () {
+        // data-url 속성을 읽어옴
+        location.href = this.getAttribute('data-url');
+    });
+
+    document.querySelector('.saveLabel').addEventListener('mouseover', function () {
+        if (!document.querySelector('#saveBtn').checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png';
+        }
+    });
+
+    document.querySelector('.saveLabel').addEventListener('mouseout', function () {
+        if (!document.querySelector('#saveBtn').checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png';
+        }
+    });
+
+    document.querySelector('#saveBtn').addEventListener('change', function () {
+        if (this.checked) {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-full.png';
+        } else {
+            document.querySelector('.saveBtnImg').src = '/assets/images/icon/like-empty.png';
+        }
+    });
+
+</script>
+<script>
+    $(document).ready(function () {
+        function faqList(page_FAQ) {
+            $.ajax({
+                type: 'GET',
+                url: '/qna/faq',
+                data: {
+                    page: page_FAQ,
+                    size: 10,
+                    sort: 'createdAt,desc'
+                },
+                success: function (data) {
+                    var faqArea = $("#faqList");
+                    faqArea.empty();
+                    var faqs = data.content;
+
+                    if (faqs.length < 1) {
+                        faqArea.append('<span>자주 묻는 질문을 등록해주세요.</span>');
+                    } else {
+                        faqs.forEach(function (faq) {
+                            let tmp_html = "";
+                            tmp_html += "<details><summary class=\"faqTitle\">" + faq.title + "</summary>";
+                            tmp_html += "<span class=\"faqSpan\"><div class=\"faqContent\">" + faq.content + "</div>";
+                            if (faq.image != null) {
+                                tmp_html += "<img class=\"faqImg webkit\" src=\"/assets/qnaImages/" + faq.image + "\">";
+                            }
+                            tmp_html += "</span></details>";
+                            faqArea.append(tmp_html);
+                        });
+                    }
+                    var pagination_FAQ = $("#pagination_FAQ");
+                    pagination_FAQ.empty();
+                    var totalPages_FAQ = data.page.totalPages;
+                    $("#hiddenTotal_FAQ").val(totalPages_FAQ);
+                    var visiblePages_FAQ = 5;
+                    var startPage_FAQ = Math.max(0, Math.min(page_FAQ - Math.floor(visiblePages_FAQ / 2), totalPages_FAQ - visiblePages_FAQ));
+                    var endPage_FAQ = Math.min(totalPages_FAQ, startPage_FAQ + visiblePages_FAQ);
+
+                    for (var i = startPage_FAQ; i < endPage_FAQ; i++) {
+                        pagination_FAQ.append('<button class="page-btn" id="faq-page" data-page="' + i + '">' + (i + 1) + '</button>');
+                    }
+
+                    currentPage_FAQ = page_FAQ;
+                }
+            });
+        }
+
+        $(document).on('click', '#faq-page', function () {
+            var page_FAQ = $(this).data('page');
+            faqList(page_FAQ);
+        });
+
+        $('#prevBtn_FAQ').click(function () {
+            if (currentPage_FAQ > 0) {
+                faqList(currentPage_FAQ - 1);
+            }
+        });
+
+        $('#nextBtn_FAQ').click(function () {
+            if (currentPage_FAQ < $('#hiddenTotal_FAQ').val() - 1) {
+                faqList(currentPage_FAQ + 1);
+            }
+        });
+
+        faqList(0);
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        function qnaList(page_QNA) {
+            $.ajax({
+                type: 'GET',
+                url: '/qna/oneByone',
+                data: {
+                    page: page_QNA,
+                    size: 10,
+                    sort: 'createdAt,desc'
+                },
+                success: function (data) {
+                    var qnaArea = $("#qnaList");
+                    var username = $("#username").val()
+                    qnaArea.empty();
+                    var qnas = data.content;
+
+                    if (qnas.length < 1) {
+                        qnaArea.append('<div class="qna-non-title">1:1 문의를 등록해주세요.</div>');
+                    } else {
+                        qnas.forEach(function (qna) {
+                            var date = new Date(qna.createdAt);
+                            var formattedDate = date.toLocaleDateString();
+                            qnaArea.append('<div th:if="' + username + '==' + qna.member.username + '">');
+                            if (qna.checkyn === "n") {
+                                qnaArea.append('<div class="buttonContain qna-contain"><div><a class="myPageSavaLink" href="/qna/oneByone/detail/'
+                                    + qna.qseq + '"><h1>' + "[답변대기]" + qna.title + '</h1></a></div>' + '<div class="qna-createdAt">' + formattedDate + '</div>' + '</div>');
+                            } else {
+                                qnaArea.append('<div class="buttonContain qna-contain"><div><a class="myPageSavaLink" href="/qna/oneByone/detail/'
+                                    + qna.qseq + '"><h1>' + "[답변완료]" + qna.title + '</h1></a></div>' + '<div class="qna-createdAt">' + formattedDate + '</div>' + '</div>');
+                            }
+
+                            qnaArea.append('</div>');
+                            qnaArea.append('<input type="hidden" id="hiddenUsername" value="' + qna.member.username + '">')
+                        });
+                    }
+                    var pagination_QNA = $("#pagination_QNA");
+                    pagination_QNA.empty();
+                    var totalPages_QNA = data.page.totalPages;
+                    $("#hiddenTotal_QNA").val(totalPages_QNA);
+                    var visiblePages_QNA = 5;
+                    var startPage_QNA = Math.max(0, Math.min(page_QNA - Math.floor(visiblePages_QNA / 2), totalPages_QNA - visiblePages_QNA));
+                    var endPage_QNA = Math.min(totalPages_QNA, startPage_QNA + visiblePages_QNA);
+
+                    for (var i = startPage_QNA; i < endPage_QNA; i++) {
+                        pagination_QNA.append('<button class="page-btn" id="qna-page" data-page="' + i + '">' + (i + 1) + '</button>');
+                    }
+
+                    currentPage_QNA = page_QNA;
+                }
+            });
+        }
+
+        $(document).on('click', '#qna-page', function () {
+            var page_QNA = $(this).data('page');
+            qnaList(page_QNA);
+        });
+
+        $('#prevBtn_QNA').click(function () {
+            if (currentPage_QNA > 0) {
+                qnaList(currentPage_QNA - 1);
+            }
+        });
+
+        $('#nextBtn_QNA').click(function () {
+            if (currentPage_QNA < $('#hiddenTotal_QNA').val() - 1) {
+                qnaList(currentPage_QNA + 1);
+            }
+        });
+
+        qnaList(0);
+    });
+
+
+    $(document).ready(function () {
+        var userRole = $("#userRole").val();
+        if (userRole == 'ROLE_ADMIN' || userRole == 'ROLE_SUPERVISOR') {
+            $("#faqWrite").show();
+            $("#oneByone").hide();
+            $("#qnaList").show();
+        } else {
+            $("#faqWrite").hide();
+            $("#oneByone").show();
+        }
+    });
+</script>
+</body>
+</html>
